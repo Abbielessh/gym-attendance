@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kannai Fitness Studio | Login</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body class="login-body bg-page">
+  <main class="login-shell">
+    <section class="login-hero glass-card">
+      <div class="brand-row">
+        <img src="/assets/img/logo-gym.png" onerror="this.style.display='none'" alt="Gym logo" />
+        <span class="brand-mark">K</span>
+        <div>
+          <h1>Kannai Fitness Studio</h1>
+          <p>Attendance, plans, and PT sessions</p>
+        </div>
+      </div>
+      <h2>Professional gym management in one fast dashboard.</h2>
+      <p class="hero-copy">Track member entry and exit, trainee attendance, plan expiry alerts, PT clients, and manual attendance from a responsive Node and Supabase web app.</p>
+      <div class="feature-grid small">
+        <span>Kiosk numpad</span>
+        <span>Plan alerts</span>
+        <span>PT sessions</span>
+        <span>Manager reports</span>
+      </div>
+    </section>
+
+    <section class="login-card glass-card">
+      <h2>Sign in</h2>
+      <p class="muted">Use demo accounts first, then add your own trainees from the dashboard.</p>
+      <form id="loginForm" class="stack-form">
+        <label>Email
+          <input name="email" type="email" value="manager@gym.com" required />
+        </label>
+        <label>Password
+          <input name="password" type="password" value="123456" required />
+        </label>
+        <button type="submit" class="btn primary full">Login</button>
+        <p id="loginMessage" class="form-message"></p>
+      </form>
+      <div class="demo-box">
+        <strong>Demo login</strong>
+        <p>Manager: manager@gym.com / 123456</p>
+        <p>Trainee: trainee@gym.com / 123456</p>
+      </div>
+      <a class="link-btn" href="/kiosk">Open public attendance kiosk</a>
+    </section>
+  </main>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/login.js"></script>
+</body>
+</html>

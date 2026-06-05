@@ -1,0 +1,19 @@
+{
+  "name": "kannai-fitness-studio-supabase",
+  "version": "2.1.0",
+  "description": "Professional Supabase-backed gym attendance, member plans, trainee attendance, and PT session tracking web app.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "check": "node scripts/check-supabase.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "dayjs": "^1.11.13",
+    "dotenv": "^16.4.7",
+    "express": "^4.19.2",
+    "express-session": "^1.18.1",
+    "uuid": "^9.0.1"
+  }
+}

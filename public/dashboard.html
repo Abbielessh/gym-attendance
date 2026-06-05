@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kannai Fitness Studio | Dashboard</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body class="app-body bg-page">
+  <div class="app-layout">
+    <aside class="sidebar glass-card">
+      <div class="brand-row compact">
+        <img src="/assets/img/logo-gym.png" onerror="this.style.display='none'" alt="Gym logo" />
+        <span class="brand-mark">K</span>
+        <div>
+          <h1>Kannai Fitness Studio</h1>
+          <p id="gymName">Dashboard</p>
+        </div>
+      </div>
+      <nav class="nav-list" id="navList"></nav>
+      <a class="kiosk-link" href="/kiosk" target="_blank">Open kiosk</a>
+    </aside>
+    <main class="content">
+      <header class="topbar glass-strip">
+        <div>
+          <p class="eyebrow" id="roleText">Manager</p>
+          <h2 id="welcomeText">Welcome</h2>
+        </div>
+        <div class="top-actions">
+          <button class="btn ghost" id="refreshBtn">Refresh</button>
+          <button class="btn danger soft" id="logoutBtn">Logout</button>
+        </div>
+      </header>
+      <section id="toast" class="toast hidden"></section>
+      <section id="pageContent"></section>
+    </main>
+  </div>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kannai Fitness Studio | Public Attendance Kiosk</title>
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body class="kiosk-body bg-page">
+  <main class="kiosk-shell">
+    <section class="kiosk-card glass-card">
+      <div class="kiosk-head">
+        <div>
+          <p class="eyebrow">Public Attendance Desk</p>
+          <h1>Enter your member number</h1>
+          <p class="muted">First entry saves <b>IN time</b>. Enter again to save <b>OUT time</b>.</p>
+        </div>
+        <a class="btn ghost" href="/login">Staff login</a>
+      </div>
+      <div class="display-wrap">
+        <input id="kioskInput" class="kiosk-display" placeholder="Member No / Phone" inputmode="numeric" autocomplete="off" />
+        <button id="clearBtn" class="btn danger soft">Clear</button>
+      </div>
+      <div class="numpad" id="numpad">
+        <button data-key="1">1</button><button data-key="2">2</button><button data-key="3">3</button>
+        <button data-key="4">4</button><button data-key="5">5</button><button data-key="6">6</button>
+        <button data-key="7">7</button><button data-key="8">8</button><button data-key="9">9</button>
+        <button data-key="back">Back</button><button data-key="0">0</button><button data-key="enter" class="enter-key">Enter</button>
+      </div>
+      <div id="kioskMessage" class="kiosk-message idle">Ready for attendance</div>
+    </section>
+  </main>
+  <script src="/assets/js/common.js"></script>
+  <script src="/assets/js/kiosk.js"></script>
+</body>
+</html>
