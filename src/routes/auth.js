@@ -10,26 +10,42 @@ function asyncRoute(fn) {
 }
 
 router.post('/login', asyncRoute(async (req, res) => {
-  const email = String(req.body.email || '').trim().toLowerCase();
+  const email    = String(req.body.email    || '').trim().toLowerCase();
   const password = String(req.body.password || '');
+
   const supabase = getSupabase();
   const { data, error } = await supabase
     .from('app_users')
     .select('*')
     .eq('email', email)
-    .eq('active', true)
+    .eq('is_active', true)
     .maybeSingle();
   throwIfError(error);
+
   const user = userFromRow(data);
-  if (!user || !verifyPassword(password, user.passwordHash)) {
+  const match = user ? await verifyPassword(password, user.passwordHash) : false;
+
+  if (!match) {
     return res.status(401).json({ ok: false, message: 'Invalid email or password' });
   }
+
   req.session.userId = user.id;
   res.json({ ok: true, user: sanitizeUser(user) });
 }));
 
 router.post('/logout', (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
+  req.session = null;
+  if (req.accepts('html') && !req.headers['x-requested-with']) {
+    res.redirect('/');
+  } else {
+    res.json({ ok: true });
+  }
+});
+
+// GET logout — for EJS page nav links
+router.get('/logout', (req, res) => {
+  req.session = null;
+  res.redirect('/');
 });
 
 router.get('/me', asyncRoute(async (req, res) => {
@@ -39,7 +55,7 @@ router.get('/me', asyncRoute(async (req, res) => {
     .from('app_users')
     .select('*')
     .eq('id', req.session.userId)
-    .eq('active', true)
+    .eq('is_active', true)
     .maybeSingle();
   throwIfError(error);
   const user = userFromRow(data);

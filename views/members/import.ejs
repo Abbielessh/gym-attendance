@@ -1,0 +1,105 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <div class="page-header">
+      <h1 class="page-title">Import Members from Excel</h1>
+      <a href="/members" class="btn">Back to Members</a>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <!-- Upload form -->
+    <div class="panel import-panel">
+      <form method="POST" action="/members/import/preview" enctype="multipart/form-data" class="import-form">
+        <!-- action points to /members/import/preview which maps to POST /preview in the router -->
+        <div class="form-group">
+          <label class="form-label" for="file">Select Excel or CSV file</label>
+          <input type="file" id="file" name="file"
+                 accept=".xlsx,.xls,.csv"
+                 class="form-input file-input" required>
+          <small class="form-hint">Accepted formats: .xlsx, .xls, .csv — max 10 MB</small>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Upload and Preview</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Column guide -->
+    <div class="panel import-guide">
+      <div class="form-section-title">Supported Column Names</div>
+      <p class="guide-intro">
+        Your Excel file can use any of the column names below. Column order does not matter.
+        Only <strong>Member No</strong> and <strong>Name</strong> are required.
+      </p>
+      <div class="col-guide-grid">
+        <div class="col-guide-group">
+          <div class="col-guide-title">Member Identification</div>
+          <ul>
+            <li><code>Member No</code>, <code>Member Number</code>, <code>ID</code></li>
+            <li><code>Name</code>, <code>Full Name</code></li>
+          </ul>
+        </div>
+        <div class="col-guide-group">
+          <div class="col-guide-title">Contact Details</div>
+          <ul>
+            <li><code>Phone</code>, <code>Mobile</code>, <code>Contact</code></li>
+            <li><code>Email</code></li>
+            <li><code>Gender</code></li>
+            <li><code>DOB</code>, <code>Date of Birth</code></li>
+            <li><code>Address</code></li>
+          </ul>
+        </div>
+        <div class="col-guide-group">
+          <div class="col-guide-title">Emergency Contact</div>
+          <ul>
+            <li><code>Emergency Name</code>, <code>Emergency Contact</code></li>
+            <li><code>Emergency Phone</code>, <code>Emergency Mobile</code></li>
+          </ul>
+        </div>
+        <div class="col-guide-group">
+          <div class="col-guide-title">Plan Details</div>
+          <ul>
+            <li><code>Plan</code>, <code>Plan Name</code>, <code>Package</code></li>
+            <li><code>Duration</code>, <code>Months</code></li>
+            <li><code>Start Date</code>, <code>Joining Date</code></li>
+            <li><code>End Date</code>, <code>Expiry Date</code></li>
+            <li><code>Notification</code>, <code>Notify</code></li>
+          </ul>
+        </div>
+        <div class="col-guide-group">
+          <div class="col-guide-title">Assignment</div>
+          <ul>
+            <li><code>Trainer Email</code>, <code>Assigned Trainer</code>, <code>PT Trainer</code></li>
+            <li><small>Legacy: <code>Trainee Email</code> also accepted</small></li>
+          </ul>
+        </div>
+        <div class="col-guide-group">
+          <div class="col-guide-title">Other</div>
+          <ul>
+            <li><code>Notes</code>, <code>Remarks</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="import-notes">
+        <strong>Tips:</strong>
+        <ul>
+          <li>If <strong>End Date</strong> is empty but <strong>Start Date</strong> and <strong>Duration</strong> are given, the end date will be auto-calculated.</li>
+          <li>If the member number already exists, the record will be <strong>updated</strong>. Otherwise it will be <strong>inserted</strong>.</li>
+          <li>Use the trainer's login email in the <strong>Trainer Email</strong> column to assign a trainer to the member.</li>
+          <li>Date format accepted: YYYY-MM-DD, DD-MM-YYYY, MM/DD/YYYY, DD/MM/YYYY.</li>
+          <li>For Notification column: <code>Yes</code>/<code>No</code>, <code>True</code>/<code>False</code>, <code>1</code>/<code>0</code> are accepted.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/foot') %>

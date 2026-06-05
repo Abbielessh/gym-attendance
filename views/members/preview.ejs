@@ -1,0 +1,192 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <div class="page-header">
+      <h1 class="page-title">Import Preview</h1>
+      <a href="/members/import" class="btn">Re-upload File</a>
+    </div>
+
+    <%
+      const validCount   = rows.filter(r => r.valid).length;
+      const invalidCount = rows.filter(r => !r.valid).length;
+      const insertCount  = rows.filter(r => r.valid && r.action === 'insert').length;
+      const updateCount  = rows.filter(r => r.valid && r.action === 'update').length;
+    %>
+
+    <!-- Summary bar -->
+    <div class="preview-summary">
+      <div class="summary-pill total">  <strong><%= rows.length %></strong> rows</div>
+      <div class="summary-pill insert"> <strong><%= insertCount %></strong> will insert</div>
+      <div class="summary-pill update"> <strong><%= updateCount %></strong> will update</div>
+      <div class="summary-pill error">  <strong><%= invalidCount %></strong> have errors</div>
+    </div>
+
+    <% if (invalidCount > 0) { %>
+      <div class="alert-msg alert-warning">
+        Rows with errors will be skipped. Fix them in the table below and submit again, or re-upload the corrected file.
+      </div>
+    <% } %>
+
+    <!-- Editable preview table -->
+    <form id="importForm" method="POST" action="/members/import/confirm">
+      <textarea name="rows" id="rowsJson" style="display:none"></textarea>
+
+      <div class="panel preview-panel">
+        <div class="table-overflow preview-table-wrap">
+          <table class="preview-table" id="previewTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Status</th>
+                <th>Member No <span class="required">*</span></th>
+                <th>Full Name <span class="required">*</span></th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Gender</th>
+                <th>Date of Birth</th>
+                <th>Address</th>
+                <th>Emergency Name</th>
+                <th>Emergency Phone</th>
+                <th>Plan Name</th>
+                <th>Duration (mo)</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Notify</th>
+                <th>Trainer Email</th>
+                <th>Notes</th>
+                <th>Errors</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach(function(row, i) { %>
+                <tr class="preview-row <%= row.valid ? '' : 'row-error' %>"
+                    data-index="<%= i %>">
+                  <td class="row-num"><%= i + 1 %></td>
+                  <td>
+                    <% if (!row.valid) { %>
+                      <span class="badge danger">Error</span>
+                    <% } else if (row.action === 'update') { %>
+                      <span class="badge warning">Update</span>
+                    <% } else { %>
+                      <span class="badge success">Insert</span>
+                    <% } %>
+                  </td>
+                  <td><input type="text" class="preview-cell" data-field="member_no"
+                             value="<%= row.member_no %>" placeholder="Required"></td>
+                  <td><input type="text" class="preview-cell" data-field="full_name"
+                             value="<%= row.full_name %>" placeholder="Required"></td>
+                  <td><input type="text" class="preview-cell" data-field="phone"
+                             value="<%= row.phone %>"></td>
+                  <td><input type="email" class="preview-cell" data-field="email"
+                             value="<%= row.email %>"></td>
+                  <td>
+                    <select class="preview-cell" data-field="gender">
+                      <option value="" <%= !row.gender ? 'selected' : '' %>></option>
+                      <option value="Male"   <%= row.gender === 'Male'   ? 'selected' : '' %>>Male</option>
+                      <option value="Female" <%= row.gender === 'Female' ? 'selected' : '' %>>Female</option>
+                      <option value="Other"  <%= row.gender === 'Other'  ? 'selected' : '' %>>Other</option>
+                    </select>
+                  </td>
+                  <td><input type="date" class="preview-cell" data-field="date_of_birth"
+                             value="<%= row.date_of_birth %>"></td>
+                  <td><input type="text" class="preview-cell" data-field="address"
+                             value="<%= row.address %>"></td>
+                  <td><input type="text" class="preview-cell" data-field="emergency_contact_name"
+                             value="<%= row.emergency_contact_name %>"></td>
+                  <td><input type="text" class="preview-cell" data-field="emergency_contact_phone"
+                             value="<%= row.emergency_contact_phone %>"></td>
+                  <td><input type="text" class="preview-cell" data-field="plan_name"
+                             value="<%= row.plan_name %>"></td>
+                  <td><input type="number" class="preview-cell preview-narrow" data-field="plan_duration_months"
+                             value="<%= row.plan_duration_months %>" min="1"></td>
+                  <td><input type="date" class="preview-cell" data-field="plan_start_date"
+                             value="<%= row.plan_start_date %>"></td>
+                  <td><input type="date" class="preview-cell" data-field="plan_end_date"
+                             value="<%= row.plan_end_date %>"></td>
+                  <td>
+                    <select class="preview-cell" data-field="notification_enabled">
+                      <option value="true"  <%= row.notification_enabled !== false ? 'selected' : '' %>>Yes</option>
+                      <option value="false" <%= row.notification_enabled === false  ? 'selected' : '' %>>No</option>
+                    </select>
+                  </td>
+                  <td><input type="email" class="preview-cell" data-field="assigned_trainer_email"
+                             value="<%= row.assigned_trainer_email %>">
+                      <input type="hidden" class="preview-cell" data-field="assigned_trainer_id"
+                             value="<%= row.assigned_trainer_id %>">
+                  </td>
+                  <td><input type="text" class="preview-cell" data-field="notes"
+                             value="<%= row.notes %>"></td>
+                  <td class="error-cell">
+                    <% if (row.errors && row.errors.length) { %>
+                      <ul class="row-errors">
+                        <% row.errors.forEach(function(e) { %><li><%= e %></li><% }); %>
+                      </ul>
+                    <% } %>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="form-actions preview-actions">
+          <button type="submit" id="submitImport" class="btn primary"
+                  <% if (!validCount) { %>disabled<% } %>>
+            Confirm Import (<%= validCount %> valid row<%= validCount === 1 ? '' : 's' %>)
+          </button>
+          <a href="/members/import" class="btn">Cancel</a>
+        </div>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  const form   = document.getElementById('importForm');
+  const jsonEl = document.getElementById('rowsJson');
+  const tbody  = document.querySelector('#previewTable tbody');
+
+  // Serialize all preview rows to JSON before submit
+  form.addEventListener('submit', function(e) {
+    const rows = [];
+    tbody.querySelectorAll('tr.preview-row').forEach(function(tr) {
+      const row = {};
+      tr.querySelectorAll('.preview-cell').forEach(function(cell) {
+        const field = cell.dataset.field;
+        if (!field) return;
+        if (cell.type === 'checkbox') row[field] = cell.checked;
+        else if (field === 'notification_enabled') row[field] = cell.value === 'true';
+        else row[field] = cell.value;
+      });
+      rows.push(row);
+    });
+    jsonEl.value = JSON.stringify(rows);
+  });
+
+  // Auto-calculate plan_end_date when start date or duration changes
+  tbody.addEventListener('change', function(e) {
+    const cell = e.target;
+    if (!cell.classList.contains('preview-cell')) return;
+    const field = cell.dataset.field;
+    if (field !== 'plan_start_date' && field !== 'plan_duration_months') return;
+
+    const tr      = cell.closest('tr');
+    const startEl = tr.querySelector('[data-field="plan_start_date"]');
+    const durEl   = tr.querySelector('[data-field="plan_duration_months"]');
+    const endEl   = tr.querySelector('[data-field="plan_end_date"]');
+
+    if (startEl && durEl && endEl && startEl.value && parseInt(durEl.value, 10) > 0 && !endEl.value) {
+      const d = new Date(startEl.value);
+      d.setMonth(d.getMonth() + parseInt(durEl.value, 10));
+      endEl.value = d.toISOString().slice(0, 10);
+    }
+  });
+})();
+</script>
+
+<%- include('../partials/foot') %>

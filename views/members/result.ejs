@@ -1,0 +1,68 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <div class="page-header">
+      <h1 class="page-title">Import Complete</h1>
+      <a href="/members" class="btn primary">View Members</a>
+    </div>
+
+    <!-- Result summary -->
+    <div class="panel result-panel">
+      <div class="result-summary">
+        <div class="result-stat inserted">
+          <div class="result-count"><%= inserted %></div>
+          <div class="result-label">Inserted</div>
+        </div>
+        <div class="result-stat updated">
+          <div class="result-count"><%= updated %></div>
+          <div class="result-label">Updated</div>
+        </div>
+        <div class="result-stat skipped">
+          <div class="result-count"><%= skipped %></div>
+          <div class="result-label">Skipped</div>
+        </div>
+        <div class="result-stat errored">
+          <div class="result-count"><%= errors.length %></div>
+          <div class="result-label">Errors</div>
+        </div>
+      </div>
+      <p class="result-total">Total rows processed: <strong><%= total %></strong></p>
+    </div>
+
+    <!-- Error details -->
+    <% if (errors && errors.length) { %>
+      <div class="panel">
+        <div class="form-section-title">Rows with Errors</div>
+        <table class="members-table">
+          <thead>
+            <tr>
+              <th>Member No</th>
+              <th>Name</th>
+              <th>Error</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% errors.forEach(function(err) { %>
+              <tr>
+                <td><code><%= err.memberNo %></code></td>
+                <td><%= err.fullName %></td>
+                <td class="error-text"><%= err.message %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+
+    <div class="form-actions">
+      <a href="/members" class="btn primary">Go to Members List</a>
+      <a href="/members/import" class="btn">Import Another File</a>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/foot') %>

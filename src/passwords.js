@@ -1,17 +1,14 @@
-const crypto = require('crypto');
+const bcrypt = require('bcrypt');
 
-function hashPassword(password) {
-  const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
-  return `scrypt:${salt}:${hash}`;
+const ROUNDS = 10;
+
+async function hashPassword(password) {
+  return bcrypt.hash(String(password), ROUNDS);
 }
 
-function verifyPassword(password, storedHash) {
+async function verifyPassword(password, storedHash) {
   if (!storedHash) return false;
-  const [method, salt, originalHash] = String(storedHash).split(':');
-  if (method !== 'scrypt' || !salt || !originalHash) return false;
-  const hash = crypto.scryptSync(String(password), salt, 64).toString('hex');
-  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(originalHash, 'hex'));
+  return bcrypt.compare(String(password), String(storedHash));
 }
 
 module.exports = { hashPassword, verifyPassword };

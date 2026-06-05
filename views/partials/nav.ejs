@@ -1,0 +1,48 @@
+<nav class="mgmt-nav">
+  <div class="mgmt-nav-brand">
+    <a href="/dashboard" class="brand-link"><img src="/assets/img/logo-gym.png" alt="" class="nav-logo" onerror="this.style.display='none'">Kannai Fitness</a>
+  </div>
+  <div class="mgmt-nav-links">
+    <a href="/dashboard" class="mgmt-nav-link">Dashboard</a>
+    <a href="/attendance" class="mgmt-nav-link">Attendance</a>
+
+    <% if (user && user.role === 'manager') { %>
+
+      <!-- Members dropdown — manager sees all member actions -->
+      <div class="nav-dropdown">
+        <span class="mgmt-nav-link nav-dropdown-toggle">Members</span>
+        <div class="nav-dropdown-menu">
+          <a href="/members"        class="nav-dropdown-item">Members List</a>
+          <a href="/members/new"    class="nav-dropdown-item">Add Public Member</a>
+          <a href="/members/import" class="nav-dropdown-item">Import Members</a>
+        </div>
+      </div>
+
+      <!-- Trainers dropdown — manager only -->
+      <div class="nav-dropdown">
+        <span class="mgmt-nav-link nav-dropdown-toggle">Trainers</span>
+        <div class="nav-dropdown-menu">
+          <a href="/trainers"     class="nav-dropdown-item">Trainers List</a>
+          <a href="/trainers/new" class="nav-dropdown-item">Add Trainer</a>
+        </div>
+      </div>
+
+    <% } else if (user && user.role === 'trainer') { %>
+
+      <!-- Members dropdown — trainer sees add + their own members -->
+      <div class="nav-dropdown">
+        <span class="mgmt-nav-link nav-dropdown-toggle">Members</span>
+        <div class="nav-dropdown-menu">
+          <a href="/members/new" class="nav-dropdown-item">Add Public Member</a>
+          <a href="/members"     class="nav-dropdown-item">My Members</a>
+        </div>
+      </div>
+
+    <% } %>
+  </div>
+  <div class="mgmt-nav-user">
+    <span class="nav-user-name"><%= user ? user.name : '' %></span>
+    <span class="badge <%= user && user.role === 'manager' ? 'success' : '' %>"><%= user ? user.role : '' %></span>
+    <a href="/api/auth/logout" class="btn btn-sm">Logout</a>
+  </div>
+</nav>

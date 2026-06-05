@@ -1,0 +1,221 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Edit Member</h1>
+        <p class="muted" style="margin:4px 0 0;font-size:.9rem;"><%= member.fullName %> &mdash; <code><%= member.memberNo %></code></p>
+      </div>
+      <div class="page-header-actions">
+        <a href="/members/<%= member.id %>" class="btn">View Details</a>
+        <a href="/members" class="btn">Back to Members</a>
+      </div>
+    </div>
+
+    <!-- Sub-navigation -->
+    <div class="sub-nav">
+      <a href="/members"     class="sub-nav-link">Members List</a>
+      <a href="/members/new" class="sub-nav-link">Add Member</a>
+      <% if (user && user.role === 'manager') { %>
+        <a href="/members/import" class="sub-nav-link">Import Excel</a>
+      <% } %>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <% if (errors && errors.length) { %>
+      <div class="alert-msg alert-error">
+        <strong>Please fix the following errors:</strong>
+        <ul>
+          <% errors.forEach(function(e) { %><li><%= e %></li><% }); %>
+        </ul>
+      </div>
+    <% } %>
+
+    <form method="POST" action="/members/<%= member.id %>" class="member-form panel form-page vertical-form">
+
+      <!-- Basic Details -->
+      <div class="form-section">
+        <div class="form-section-title">Basic Details</div>
+        <div class="form-group">
+          <label class="form-label">Member Number</label>
+          <input type="text" class="form-input" value="<%= member.memberNo %>" disabled>
+          <small class="form-hint">Member number cannot be changed.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="fullName">Full Name <span class="required">*</span></label>
+          <input id="fullName" name="fullName" type="text" class="form-input"
+                 value="<%= member.fullName %>" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" class="form-input"
+                 value="<%= member.phone || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="email">Email</label>
+          <input id="email" name="email" type="email" class="form-input"
+                 value="<%= member.email || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="gender">Gender</label>
+          <select id="gender" name="gender" class="form-input">
+            <option value="">Select gender</option>
+            <option value="Male"   <%= member.gender === 'Male'   ? 'selected' : '' %>>Male</option>
+            <option value="Female" <%= member.gender === 'Female' ? 'selected' : '' %>>Female</option>
+            <option value="Other"  <%= member.gender === 'Other'  ? 'selected' : '' %>>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="dateOfBirth">Date of Birth</label>
+          <input id="dateOfBirth" name="dateOfBirth" type="date" class="form-input"
+                 value="<%= member.dateOfBirth || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="address">Address</label>
+          <input id="address" name="address" type="text" class="form-input"
+                 value="<%= member.address || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="isActive">Account Status</label>
+          <select id="isActive" name="isActive" class="form-input">
+            <option value="true"  <%= member.isActive ? 'selected' : '' %>>Active</option>
+            <option value="false" <%= !member.isActive ? 'selected' : '' %>>Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Plan Details -->
+      <div class="form-section">
+        <div class="form-section-title">Plan Details</div>
+        <div class="form-group">
+          <label class="form-label" for="planName">Plan Name</label>
+          <input id="planName" name="planName" type="text" class="form-input"
+                 value="<%= member.planName || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="planDurationMonths">Duration (months)</label>
+          <input id="planDurationMonths" name="planDurationMonths" type="number"
+                 min="1" max="120" class="form-input"
+                 value="<%= member.planDurationMonths || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="planStartDate">Plan Start Date</label>
+          <input id="planStartDate" name="planStartDate" type="date" class="form-input"
+                 value="<%= member.planStartDate || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="planEndDate">Plan End Date</label>
+          <input id="planEndDate" name="planEndDate" type="date" class="form-input"
+                 value="<%= member.planEndDate || '' %>">
+          <small class="form-hint">Auto-fills if you clear this and enter start date + duration.</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="notificationEnabled">Plan Expiry Notification</label>
+          <select id="notificationEnabled" name="notificationEnabled" class="form-input">
+            <option value="true"  <%= member.notificationEnabled ? 'selected' : '' %>>Enabled</option>
+            <option value="false" <%= !member.notificationEnabled ? 'selected' : '' %>>Disabled</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Emergency Contact -->
+      <div class="form-section">
+        <div class="form-section-title">Emergency Contact</div>
+        <div class="form-group">
+          <label class="form-label" for="emergencyContactName">Contact Name</label>
+          <input id="emergencyContactName" name="emergencyContactName" type="text" class="form-input"
+                 value="<%= member.emergencyContactName || '' %>">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="emergencyContactPhone">Contact Phone</label>
+          <input id="emergencyContactPhone" name="emergencyContactPhone" type="tel" class="form-input"
+                 value="<%= member.emergencyContactPhone || '' %>">
+        </div>
+      </div>
+
+      <!-- Trainer Assignment -->
+      <div class="form-section">
+        <div class="form-section-title">Trainer Assignment</div>
+        <div class="form-group">
+          <label class="form-label" for="assignedTrainerId">Assigned Trainer</label>
+          <select id="assignedTrainerId" name="assignedTrainerId" class="form-input">
+            <option value="">No trainer assigned</option>
+            <% trainers.forEach(function(t) { %>
+              <option value="<%= t.id %>" <%= member.assignedTrainerId === t.id ? 'selected' : '' %>>
+                <%= t.name %> (<%= t.email %>)
+              </option>
+            <% }); %>
+          </select>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-section">
+        <div class="form-section-title">Notes</div>
+        <div class="form-group">
+          <label class="form-label" for="notes">Notes</label>
+          <textarea id="notes" name="notes" class="form-input form-textarea"><%= member.notes || '' %></textarea>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn primary">Save Changes</button>
+        <a href="/members/<%= member.id %>" class="btn">Cancel</a>
+      </div>
+    </form>
+
+    <!-- Danger zone -->
+    <div class="panel danger-zone form-page" style="margin-top:24px">
+      <div class="form-section-title danger-title">Danger Zone</div>
+      <div class="danger-row">
+        <div>
+          <strong>Deactivate member</strong>
+          <p>The member will be hidden from active lists but data is preserved.</p>
+        </div>
+        <form method="POST" action="/members/<%= member.id %>/delete"
+              onsubmit="return confirm('Deactivate this member?')">
+          <button type="submit" class="btn danger">Deactivate</button>
+        </form>
+      </div>
+      <div class="danger-row">
+        <div>
+          <strong>Permanently delete</strong>
+          <p>This cannot be undone. All attendance records linked to this member will be orphaned.</p>
+        </div>
+        <form method="POST" action="/members/<%= member.id %>/delete"
+              onsubmit="return confirm('PERMANENTLY DELETE this member? This cannot be undone.')">
+          <input type="hidden" name="hardDelete" value="true">
+          <button type="submit" class="btn danger">Delete Permanently</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function() {
+  const startEl    = document.getElementById('planStartDate');
+  const durationEl = document.getElementById('planDurationMonths');
+  const endEl      = document.getElementById('planEndDate');
+  function autoCalcEnd() {
+    const start  = startEl.value;
+    const months = parseInt(durationEl.value, 10);
+    if (start && months > 0 && !endEl.value) {
+      const d = new Date(start);
+      d.setMonth(d.getMonth() + months);
+      endEl.value = d.toISOString().slice(0, 10);
+    }
+  }
+  startEl.addEventListener('change', autoCalcEnd);
+  durationEl.addEventListener('change', autoCalcEnd);
+})();
+</script>
+
+<%- include('../partials/foot') %>

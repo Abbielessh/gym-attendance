@@ -6,14 +6,20 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "check": "node scripts/check-supabase.js"
+    "check": "node --check server.js && node --check src/routes/auth.js && node --check src/routes/api.js && node --check src/routes/members.js && node --check src/routes/membersImport.js && echo All syntax checks passed"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
+    "bcrypt": "^6.0.0",
+    "cookie-session": "^2.1.1",
     "dayjs": "^1.11.13",
     "dotenv": "^16.4.7",
+    "ejs": "^6.0.1",
     "express": "^4.19.2",
     "express-session": "^1.18.1",
-    "uuid": "^9.0.1"
+    "multer": "^2.1.1",
+    "serverless-http": "^4.0.0",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
   }
 }

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Kannai Fitness Studio</title>
+  <link rel="stylesheet" href="/assets/css/styles.css">
+</head>
+<body class="app-body bg-page">
+<div class="app-layout">
+  <aside class="sidebar glass-card">
+    <div class="brand-row compact">
+      <img src="/assets/img/logo-gym.png" onerror="this.style.display='none'" alt="Gym logo" />
+      <div>
+        <h1>Kannai Fitness Studio</h1>
+        <p>Gym Management System</p>
+      </div>
+    </div>
+    <nav class="nav-list">
+      <a href="/dashboard" class="nav-item">
+        <span>OV</span>Overview
+      </a>
+      <a href="/attendance" class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'attendance' ? 'active' : '' %>">
+        <span>AT</span>Attendance
+      </a>
+      <a href="/members" class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'members' ? 'active' : '' %>">
+        <span>MB</span>Members
+      </a>
+      <% if (user && user.role === 'manager') { %>
+      <a href="/trainers" class="nav-item <%= typeof activePage !== 'undefined' && activePage === 'trainers' ? 'active' : '' %>">
+        <span>TR</span>Trainers
+      </a>
+      <% } %>
+    </nav>
+    <a class="kiosk-link" href="/kiosk" target="_blank">Attendance Desk</a>
+  </aside>
+  <main class="content">
+    <header class="topbar glass-strip">
+      <div>
+        <p class="eyebrow"><%= user ? user.role : '' %></p>
+        <h2><%= user ? user.name : '' %></h2>
+      </div>
+      <div class="top-actions">
+        <a href="/api/auth/logout" class="btn danger soft">Logout</a>
+      </div>
+    </header>

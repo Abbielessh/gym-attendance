@@ -10,18 +10,18 @@ const state = {
   user: null,
   dashboard: null,
   members: [],
-  trainees: [],
+  trainers: [],
   sessions: [],
   publicAttendance: [],
-  traineeAttendance: []
+  trainerAttendance: []
 };
 
 const allTabs = [
-  { id: 'overview', label: 'Overview', icon: 'OV' },
-  { id: 'members', label: 'Members', icon: 'MB' },
-  { id: 'attendance', label: 'Attendance', icon: 'AT' },
-  { id: 'trainees', label: 'Trainees', icon: 'TR' },
-  { id: 'sessions', label: 'PT Sessions', icon: 'PT' }
+  { id: 'overview',   label: 'Overview',    icon: 'OV', img: '' },
+  { id: 'members',    label: 'Members',     icon: 'MB', img: '/assets/img/icon-members.png' },
+  { id: 'attendance', label: 'Attendance',  icon: 'AT', img: '/assets/img/icon-attendance.png' },
+  { id: 'trainers',   label: 'Trainers',    icon: 'TR', img: '/assets/img/icon-trainee.png' },
+  { id: 'sessions',   label: 'PT Sessions', icon: 'PT', img: '/assets/img/icon-pt-session.png' }
 ];
 
 function notify(message, type = 'success') {
@@ -31,11 +31,17 @@ function notify(message, type = 'success') {
 }
 
 function navTabs() {
-  const tabs = state.user?.role === 'manager' ? allTabs : allTabs.filter(t => t.id !== 'trainees');
-  navList.innerHTML = tabs.map(tab => `
-    <button class="nav-item ${state.activeTab === tab.id ? 'active' : ''}" data-tab="${tab.id}">
-      <span>${tab.icon}</span>${tab.label}
-    </button>`).join('');
+  const tabs = state.user?.role === 'manager' ? allTabs : allTabs.filter(t => t.id !== 'trainers');
+  navList.innerHTML = tabs.map(tab => {
+    if (tab.id === 'attendance') {
+      return `<a class="nav-item" href="/attendance">
+        <span>${tab.img ? `<img src="${tab.img}" alt="${tab.icon}" class="nav-icon-img">` : tab.icon}</span>${tab.label}
+      </a>`;
+    }
+    return `<button class="nav-item ${state.activeTab === tab.id ? 'active' : ''}" data-tab="${tab.id}">
+      <span>${tab.img ? `<img src="${tab.img}" alt="${tab.icon}" class="nav-icon-img">` : tab.icon}</span>${tab.label}
+    </button>`;
+  }).join('');
 }
 
 async function loadData() {
@@ -46,49 +52,49 @@ async function loadData() {
     window.location.href = '/login';
     return;
   }
-  const [dashboard, members, trainees, sessions, publicAttendance, traineeAttendance] = await Promise.all([
+  const [dashboard, members, trainers, sessions, publicAttendance, trainerAttendance] = await Promise.all([
     api('/api/dashboard'),
     api('/api/members'),
-    api('/api/trainees'),
+    api('/api/trainers'),
     api('/api/sessions'),
     api('/api/attendance?type=public'),
-    api('/api/attendance?type=trainee')
+    api('/api/attendance?type=trainer')
   ]);
   state.dashboard = dashboard;
   state.members = members.members;
-  state.trainees = trainees.trainees;
+  state.trainers = trainers.trainers;
   state.sessions = sessions.sessions;
   state.publicAttendance = publicAttendance.records;
-  state.traineeAttendance = traineeAttendance.records;
+  state.trainerAttendance = trainerAttendance.records;
   welcomeText.textContent = `Welcome, ${state.user.name}`;
-  roleText.textContent = state.user.role === 'manager' ? 'Manager dashboard' : 'Trainee dashboard';
-  gymName.textContent = dashboard.gymName || 'Dashboard';
+  roleText.textContent = state.user.role === 'manager' ? 'Manager dashboard' : 'Trainer dashboard';
+  gymName.textContent = dashboard.gymName || 'Gym Management System';
   navTabs();
   render();
 }
 
 function render() {
-  if (state.activeTab === 'overview') return renderOverview();
-  if (state.activeTab === 'members') return renderMembers();
-  if (state.activeTab === 'attendance') return renderAttendance();
-  if (state.activeTab === 'trainees') return renderTrainees();
-  if (state.activeTab === 'sessions') return renderSessions();
+  if (state.activeTab === 'overview')    return renderOverview();
+  if (state.activeTab === 'members')     return renderMembers();
+  if (state.activeTab === 'attendance')  return renderAttendance();
+  if (state.activeTab === 'trainers')    return renderTrainers();
+  if (state.activeTab === 'sessions')    return renderSessions();
 }
 
-function statCard(label, value, hint, icon) {
-  return `<article class="stat-card"><span class="stat-icon stat-code">${icon}</span><p>${label}</p><h3>${value}</h3><small>${hint}</small></article>`;
+function statCard(label, value, hint, imgSrc, code) {
+  return `<article class="stat-card"><span class="stat-icon"><img src="${imgSrc}" alt="${code}" class="stat-icon-img"></span><p>${label}</p><h3>${value}</h3><small>${hint}</small></article>`;
 }
 
 function renderOverview() {
   const s = state.dashboard.stats;
   page.innerHTML = `
     <section class="stats-grid">
-      ${statCard('Active Members', s.activeMembers, 'Current public members', 'MB')}
-      ${statCard('Inside Now', s.insideNow, 'Members not checked out', 'IN')}
-      ${statCard('Public Check-ins Today', s.publicCheckinsToday, 'Desk kiosk and manual', 'AT')}
-      ${statCard('Plan Alerts', s.planAlerts, 'Expired or expiring soon', 'PL')}
-      ${statCard('Trainee Attendance', s.traineeAttendanceToday, 'Today records', 'TR')}
-      ${statCard('PT Sessions Today', s.sessionsToday, 'Scheduled sessions', 'PT')}
+      ${statCard('Active Members', s.activeMembers, 'Current public members', '/assets/img/icon-members.png', 'MB')}
+      ${statCard('Inside Now', s.insideNow, 'Members not checked out', '/assets/img/icon-attendance.png', 'IN')}
+      ${statCard('Public Check-ins Today', s.publicCheckinsToday, 'Attendance Desk and manual', '/assets/img/icon-attendance.png', 'AT')}
+      ${statCard('Plan Alerts', s.planAlerts, 'Expired or expiring soon', '/assets/img/icon-plan-expiry.png', 'PL')}
+      ${statCard('Trainer Attendance', s.trainerAttendanceToday, 'Today records', '/assets/img/icon-trainee.png', 'TR')}
+      ${statCard('PT Sessions Today', s.sessionsToday, 'Scheduled sessions', '/assets/img/icon-pt-session.png', 'PT')}
     </section>
     <section class="two-col">
       <div class="panel">
@@ -103,7 +109,7 @@ function renderOverview() {
       </div>
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>Today public attendance</h3><a class="small-link" data-open-tab="attendance">View all</a></div>
+      <div class="panel-head"><h3>Today public attendance</h3><a class="small-link" href="/attendance">View all</a></div>
       ${attendanceTable(state.dashboard.publicToday.slice(0, 8))}
     </section>
   `;
@@ -125,44 +131,33 @@ function renderMembers() {
   const manager = state.user.role === 'manager';
   page.innerHTML = `
     <section class="panel">
-      <div class="panel-head"><h3>Public member details and plans</h3><span class="badge">${state.members.length} members</span></div>
-      ${manager ? memberForm() : ''}
+      <div class="panel-head">
+        <h3>Members</h3>
+        <div class="top-actions">
+          <span class="badge">${state.members.length} members</span>
+          <a href="/members/new" class="btn primary">Add Public Member</a>
+          <a href="/members" class="btn">View All Members</a>
+        </div>
+      </div>
       <div class="table-wrap">${memberTable()}</div>
     </section>
   `;
   attachMemberEvents();
 }
 
-function memberForm() {
-  return `<form id="memberForm" class="grid-form">
-    <label>Member Number<input name="memberCode" placeholder="1004" required /></label>
-    <label>Name<input name="name" placeholder="Member name" required /></label>
-    <label>Phone<input name="phone" placeholder="98765xxxxx" /></label>
-    <label>Age<input name="age" type="number" min="1" placeholder="25" /></label>
-    <label>Gender<select name="gender"><option>Male</option><option>Female</option><option>Other</option></select></label>
-    <label>Plan<select name="planType" id="planType"><option>Monthly</option><option>6 Months</option><option>1 Year</option><option>Custom</option></select></label>
-    <label>Plan Start<input name="planStartDate" id="planStartDate" type="date" value="${todayISO()}" /></label>
-    <label>Plan Expiry<input name="planExpiryDate" id="planExpiryDate" type="date" value="${addMonths(todayISO(), 1)}" /></label>
-    <label>Assigned Trainee<select name="assignedTraineeId"><option value="">No trainee</option>${state.trainees.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select></label>
-    <label>Emergency Contact<input name="emergencyContact" placeholder="Optional" /></label>
-    <label class="wide">Address<input name="address" placeholder="Area / address" /></label>
-    <label class="wide">Notes<input name="notes" placeholder="Fitness goal, health note, etc." /></label>
-    <label class="check-row"><input name="planNotify" type="checkbox" checked /> Show plan expiry notification</label>
-    <button class="btn primary" type="submit">Add member</button>
-  </form>`;
-}
-
 function memberTable() {
   if (!state.members.length) return `<p class="empty">No members added.</p>`;
-  return `<table><thead><tr><th>Member</th><th>Phone</th><th>Plan</th><th>Expiry</th><th>Trainee</th><th>Notify</th><th>Status</th></tr></thead><tbody>
+  const isManager = state.user.role === 'manager';
+  return `<table><thead><tr><th>Member</th><th>Phone</th><th>Plan</th><th>Expiry</th><th>Trainer</th><th>Notify</th><th>Status</th>${isManager ? '<th class="action-col">Action</th>' : ''}</tr></thead><tbody>
     ${state.members.map(m => `<tr>
-      <td><strong>${escapeHtml(m.name)}</strong><small>${escapeHtml(m.memberCode)} | ${escapeHtml(m.gender || '-')} | ${m.age || '-'}</small></td>
+      <td><strong>${escapeHtml(m.name)}</strong><small>${escapeHtml(m.memberCode)} | ${escapeHtml(m.gender || '-')} | ${m.dateOfBirth ? fmtDate(m.dateOfBirth) : '-'}</small></td>
       <td>${escapeHtml(m.phone || '-')}</td>
       <td>${escapeHtml(m.planType || '-')}</td>
       <td>${fmtDate(m.planExpiryDate)}<br><span class="badge ${badgeClass(m.planStatus)}">${planLabel(m)}</span></td>
-      <td>${escapeHtml(m.assignedTraineeName || '-')}</td>
-      <td><input type="checkbox" class="notify-toggle" data-id="${m.id}" ${m.planNotify ? 'checked' : ''} ${state.user.role !== 'manager' ? 'disabled' : ''}></td>
+      <td>${escapeHtml(m.assignedTrainerName || m.assignedTraineeName || '-')}</td>
+      <td><input type="checkbox" class="notify-toggle" data-id="${m.id}" ${m.planNotify ? 'checked' : ''} ${!isManager ? 'disabled' : ''}></td>
       <td><span class="badge ${m.status === 'active' ? 'success' : 'danger'}">${escapeHtml(m.status)}</span></td>
+      ${isManager ? `<td class="action-col"><a href="/members/${m.id}/edit" class="btn-sm btn-outline">Edit</a></td>` : ''}
     </tr>`).join('')}
   </tbody></table>`;
 }
@@ -183,28 +178,6 @@ function planLabel(m) {
 }
 
 function attachMemberEvents() {
-  const form = document.getElementById('memberForm');
-  if (form) {
-    const planType = document.getElementById('planType');
-    const start = document.getElementById('planStartDate');
-    const expiry = document.getElementById('planExpiryDate');
-    function syncExpiry() {
-      if (planType.value === 'Monthly') expiry.value = addMonths(start.value, 1);
-      if (planType.value === '6 Months') expiry.value = addMonths(start.value, 6);
-      if (planType.value === '1 Year') expiry.value = addMonths(start.value, 12);
-    }
-    planType.addEventListener('change', syncExpiry);
-    start.addEventListener('change', syncExpiry);
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        await api('/api/members', { method: 'POST', body: JSON.stringify(formDataToObject(form)) });
-        notify('Member added successfully');
-        form.reset();
-        await loadData();
-      } catch (err) { notify(err.message, 'error'); }
-    });
-  }
   document.querySelectorAll('.notify-toggle').forEach(input => {
     input.addEventListener('change', async () => {
       try {
@@ -222,13 +195,13 @@ function renderAttendance() {
     <section class="two-col">
       <div class="panel">
         <div class="panel-head"><h3>Public attendance</h3><span class="badge">${state.publicAttendance.length}</span></div>
-        ${manager ? manualAttendanceForm() : '<p class="muted">Trainees can view public attendance. Manual add is manager only.</p>'}
+        ${manager ? manualAttendanceForm() : '<p class="muted">Trainers can view public attendance. Manual add is manager only.</p>'}
         ${attendanceTable(state.publicAttendance)}
       </div>
       <div class="panel">
-        <div class="panel-head"><h3>Trainee attendance</h3><button id="myTraineePunch" class="btn primary">${state.user.role === 'trainee' ? 'My IN/OUT' : 'Selected trainee IN/OUT'}</button></div>
-        ${manager ? `<label class="field-mini">Choose trainee<select id="traineePunchSelect">${state.trainees.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select></label>` : ''}
-        ${attendanceTable(state.traineeAttendance)}
+        <div class="panel-head"><h3>Trainer attendance</h3><button id="myTrainerPunch" class="btn primary">${state.user.role === 'trainer' ? 'My IN/OUT' : 'Selected trainer IN/OUT'}</button></div>
+        ${manager ? `<label class="field-mini">Choose trainer<select id="trainerPunchSelect">${state.trainers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select></label>` : ''}
+        ${attendanceTable(state.trainerAttendance)}
       </div>
     </section>
   `;
@@ -237,7 +210,7 @@ function renderAttendance() {
 
 function manualAttendanceForm() {
   return `<form id="manualAttendanceForm" class="grid-form compact-form">
-    <label>Type<select name="personType" id="manualPersonType"><option value="member">Public Member</option><option value="trainee">Trainee</option></select></label>
+    <label>Type<select name="personType" id="manualPersonType"><option value="member">Public Member</option><option value="trainer">Trainer</option></select></label>
     <label>Person<select name="personId" id="manualPersonId"></select></label>
     <label>IN Time<input name="inAt" type="datetime-local" required /></label>
     <label>OUT Time<input name="outAt" type="datetime-local" /></label>
@@ -249,7 +222,7 @@ function setManualPersonOptions() {
   const type = document.getElementById('manualPersonType')?.value;
   const person = document.getElementById('manualPersonId');
   if (!person) return;
-  const options = type === 'trainee' ? state.trainees : state.members;
+  const options = type === 'trainer' ? state.trainers : state.members;
   person.innerHTML = options.map(p => `<option value="${p.id}">${escapeHtml(p.name)} ${p.memberCode ? `(${escapeHtml(p.memberCode)})` : ''}</option>`).join('');
 }
 
@@ -264,12 +237,12 @@ function attachAttendanceEvents() {
       await loadData();
     } catch (err) { notify(err.message, 'error'); }
   });
-  document.getElementById('myTraineePunch')?.addEventListener('click', async () => {
-    const traineeId = document.getElementById('traineePunchSelect')?.value;
+  document.getElementById('myTrainerPunch')?.addEventListener('click', async () => {
+    const trainerId = document.getElementById('trainerPunchSelect')?.value;
     try {
-      const payload = traineeId ? { traineeId } : {};
-      const data = await api('/api/attendance/trainee-punch', { method: 'POST', body: JSON.stringify(payload) });
-      notify(data.action === 'checkin' ? 'Trainee IN saved' : 'Trainee OUT saved');
+      const payload = trainerId ? { trainerId } : {};
+      const data = await api('/api/attendance/trainer-punch', { method: 'POST', body: JSON.stringify(payload) });
+      notify(data.action === 'checkin' ? 'Trainer IN saved' : 'Trainer OUT saved');
       await loadData();
     } catch (err) { notify(err.message, 'error'); }
   });
@@ -282,7 +255,7 @@ function attendanceTable(records) {
   </tbody></table></div>`;
 }
 
-function renderTrainees() {
+function renderTrainers() {
   if (state.user.role !== 'manager') {
     state.activeTab = 'overview';
     navTabs();
@@ -290,24 +263,16 @@ function renderTrainees() {
   }
   page.innerHTML = `
     <section class="panel">
-      <div class="panel-head"><h3>Trainee staff</h3><span class="badge">${state.trainees.length}</span></div>
-      <form id="traineeForm" class="grid-form compact-form">
-        <label>Name<input name="name" placeholder="Trainee name" required /></label>
-        <label>Email<input name="email" type="email" placeholder="trainer@gym.com" required /></label>
-        <label>Phone<input name="phone" placeholder="Optional" /></label>
-        <label>Password<input name="password" value="123456" /></label>
-        <button class="btn primary" type="submit">Add trainee</button>
-      </form>
-      <div class="cards-grid">${state.trainees.map(t => `<article class="mini-card"><span>TR</span><h3>${escapeHtml(t.name)}</h3><p>${escapeHtml(t.email)}</p><small>${escapeHtml(t.phone || 'No phone')}</small></article>`).join('')}</div>
+      <div class="panel-head">
+        <h3>Trainer staff</h3>
+        <div class="top-actions">
+          <span class="badge">${state.trainers.length} trainers</span>
+          <a href="/trainers/new" class="btn primary">Add Trainer</a>
+          <a href="/trainers" class="btn">Manage Trainers</a>
+        </div>
+      </div>
+      <div class="cards-grid">${state.trainers.map(t => `<article class="mini-card"><img src="/assets/img/icon-trainee.png" alt="TR" class="card-icon-img"><h3>${escapeHtml(t.name)}</h3><p>${escapeHtml(t.email)}</p><small>${escapeHtml(t.phone || 'No phone')}</small></article>`).join('')}</div>
     </section>`;
-  document.getElementById('traineeForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    try {
-      await api('/api/trainees', { method: 'POST', body: JSON.stringify(formDataToObject(e.target)) });
-      notify('Trainee added');
-      await loadData();
-    } catch (err) { notify(err.message, 'error'); }
-  });
 }
 
 function renderSessions() {
@@ -324,7 +289,7 @@ function renderSessions() {
 function sessionForm() {
   return `<form id="sessionForm" class="grid-form compact-form">
     <label>Client<select name="memberId">${state.members.map(m => `<option value="${m.id}">${escapeHtml(m.name)} (${escapeHtml(m.memberCode)})</option>`).join('')}</select></label>
-    <label>Trainee<select name="traineeId">${state.trainees.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select></label>
+    <label>Trainer<select name="trainerId">${state.trainers.map(t => `<option value="${t.id}">${escapeHtml(t.name)}</option>`).join('')}</select></label>
     <label>Date<input name="sessionDate" type="date" value="${todayISO()}" required /></label>
     <label>Time<input name="startTime" type="time" /></label>
     <label class="wide">Notes<input name="notes" placeholder="Session plan" /></label>
@@ -335,7 +300,7 @@ function sessionForm() {
 function sessionCards() {
   if (!state.sessions.length) return `<p class="empty">No PT sessions.</p>`;
   return state.sessions.map(s => `<article class="session-card">
-    <div><h3>${escapeHtml(s.memberName || 'Client')}</h3><p>${fmtDate(s.sessionDate)} ${escapeHtml(s.startTime || '')} | Trainer: ${escapeHtml(s.traineeName || '-')}</p><small>${escapeHtml(s.notes || 'No notes')}</small></div>
+    <div><h3>${escapeHtml(s.memberName || 'Client')}</h3><p>${fmtDate(s.sessionDate)} ${escapeHtml(s.startTime || '')} | Trainer: ${escapeHtml(s.trainerName || s.traineeName || '-')}</p><small>${escapeHtml(s.notes || 'No notes')}</small></div>
     <div class="session-actions"><span class="badge ${s.status === 'completed' ? 'success' : s.status === 'missed' ? 'danger' : 'warning'}">${escapeHtml(s.status)}</span>
     ${s.status !== 'completed' ? `<button class="btn success soft session-status" data-id="${s.id}" data-status="completed">Complete</button>` : ''}
     ${s.status !== 'missed' ? `<button class="btn danger soft session-status" data-id="${s.id}" data-status="missed">Missed</button>` : ''}</div>

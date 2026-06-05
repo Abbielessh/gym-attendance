@@ -1,0 +1,126 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <!-- Header -->
+    <%
+      let planBadge = '';
+      if (member.planStatus === 'expired')        planBadge = 'danger';
+      else if (member.planStatus === 'expires-today') planBadge = 'danger';
+      else if (member.planStatus === 'expiring-soon') planBadge = 'warning';
+      else if (member.planStatus === 'active')    planBadge = 'success';
+    %>
+    <div class="page-header">
+      <div>
+        <h1 class="page-title"><%= member.fullName %></h1>
+        <span class="badge <%= member.isActive ? 'success' : 'danger' %>">
+          <%= member.isActive ? 'Active' : 'Inactive' %>
+        </span>
+        <code class="member-no-badge"><%= member.memberNo %></code>
+      </div>
+      <div class="page-header-actions">
+        <% if (user && user.role === 'manager') { %>
+          <a href="/members/<%= member.id %>/edit" class="btn primary">Edit</a>
+        <% } %>
+        <a href="/members" class="btn">Back to Members</a>
+      </div>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="detail-grid">
+
+      <!-- Personal info -->
+      <div class="panel detail-panel">
+        <div class="detail-panel-title">Personal Information</div>
+        <table class="detail-table">
+          <tr><th>Phone</th>         <td><%= member.phone || '—' %></td></tr>
+          <tr><th>Email</th>         <td><%= member.email || '—' %></td></tr>
+          <tr><th>Gender</th>        <td><%= member.gender || '—' %></td></tr>
+          <tr><th>Date of Birth</th> <td><%= member.dateOfBirth || '—' %></td></tr>
+          <tr><th>Address</th>       <td><%= member.address || '—' %></td></tr>
+        </table>
+      </div>
+
+      <!-- Emergency contact -->
+      <div class="panel detail-panel">
+        <div class="detail-panel-title">Emergency Contact</div>
+        <table class="detail-table">
+          <tr><th>Name</th>  <td><%= member.emergencyContactName  || '—' %></td></tr>
+          <tr><th>Phone</th> <td><%= member.emergencyContactPhone || '—' %></td></tr>
+        </table>
+      </div>
+
+      <!-- Plan info -->
+      <div class="panel detail-panel">
+        <div class="detail-panel-title">Plan Details</div>
+        <table class="detail-table">
+          <tr>
+            <th>Plan</th>
+            <td>
+              <%= member.planName || '—' %>
+              <% if (member.planDurationMonths) { %>
+                (<%= member.planDurationMonths %> month<%= member.planDurationMonths === 1 ? '' : 's' %>)
+              <% } %>
+            </td>
+          </tr>
+          <tr><th>Start Date</th> <td><%= member.planStartDate || '—' %></td></tr>
+          <tr>
+            <th>End Date</th>
+            <td>
+              <%= member.planEndDate || '—' %>
+              <% if (member.planEndDate) { %>
+                <br>
+                <span class="badge <%= planBadge %>">
+                  <% if (member.planStatus === 'expired')        { %>Expired
+                  <% } else if (member.planStatus === 'expires-today') { %>Ends today
+                  <% } else if (member.planStatus === 'expiring-soon') { %><%= member.daysLeft %> days left
+                  <% } else if (member.planStatus === 'active')  { %><%= member.daysLeft %> days left
+                  <% } else { %>No plan
+                  <% } %>
+                </span>
+              <% } %>
+            </td>
+          </tr>
+          <tr>
+            <th>Notification</th>
+            <td>
+              <span class="badge <%= member.notificationEnabled ? 'success' : '' %>">
+                <%= member.notificationEnabled ? 'Enabled' : 'Disabled' %>
+              </span>
+            </td>
+          </tr>
+          <tr>
+            <th>Assigned Trainer</th>
+            <td><%= member.assignedTrainerName || '—' %></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Notes -->
+      <% if (member.notes) { %>
+        <div class="panel detail-panel">
+          <div class="detail-panel-title">Notes</div>
+          <p class="detail-notes"><%= member.notes %></p>
+        </div>
+      <% } %>
+
+      <!-- Meta -->
+      <div class="panel detail-panel">
+        <div class="detail-panel-title">Record Info</div>
+        <table class="detail-table">
+          <tr><th>Created</th> <td><%= member.createdAt ? new Date(member.createdAt).toLocaleString() : '—' %></td></tr>
+          <tr><th>Updated</th> <td><%= member.updatedAt ? new Date(member.updatedAt).toLocaleString() : '—' %></td></tr>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/foot') %>

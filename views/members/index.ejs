@@ -1,0 +1,140 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <!-- Page header -->
+    <div class="page-header">
+      <h1 class="page-title"><%= user && user.role === 'trainer' ? 'My Members' : 'Members' %></h1>
+      <div class="page-header-actions">
+        <% if (user && user.role === 'manager') { %>
+          <a href="/members/import" class="btn">Import Excel</a>
+        <% } %>
+        <a href="/members/new" class="btn primary">Add Public Member</a>
+      </div>
+    </div>
+
+    <!-- Sub-navigation -->
+    <div class="sub-nav">
+      <a href="/members"     class="sub-nav-link active">Members List</a>
+      <a href="/members/new" class="sub-nav-link">Add Public Member</a>
+      <% if (user && user.role === 'manager') { %>
+        <a href="/members/import" class="sub-nav-link">Import Excel</a>
+      <% } %>
+    </div>
+
+    <!-- Flash message -->
+    <% if (flash) { %>
+      <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <!-- Search and filter -->
+    <form class="search-bar" method="GET" action="/members">
+      <input
+        type="text"
+        name="q"
+        value="<%= q %>"
+        placeholder="Search by name, member number, phone or email..."
+        class="search-input"
+      >
+      <button type="submit" class="btn">Search</button>
+      <% if (q) { %><a href="/members?filter=<%= filter %>" class="btn">Clear</a><% } %>
+      <div class="filter-tabs">
+        <a href="/members?q=<%= encodeURIComponent(q) %>&filter=active"
+           class="filter-tab <%= filter === 'active' ? 'active' : '' %>">Active</a>
+        <a href="/members?q=<%= encodeURIComponent(q) %>&filter=inactive"
+           class="filter-tab <%= filter === 'inactive' ? 'active' : '' %>">Inactive</a>
+      </div>
+    </form>
+
+    <!-- Members table -->
+    <div class="panel table-panel">
+      <% if (!members.length) { %>
+        <p class="empty">
+          <% if (q) { %>No members match your search.<% } else { %>No members found.<% } %>
+        </p>
+      <% } else { %>
+        <div class="table-overflow">
+          <table class="members-table">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Plan</th>
+                <th>Expiry</th>
+                <th>Trainer</th>
+                <th>Notify</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% members.forEach(function(m) {
+                let badge = '';
+                if (m.planStatus === 'expired')        badge = 'danger';
+                else if (m.planStatus === 'expires-today') badge = 'danger';
+                else if (m.planStatus === 'expiring-soon') badge = 'warning';
+                else if (m.planStatus === 'active')    badge = 'success';
+              %>
+              <tr>
+                <td><code><%= m.memberNo %></code></td>
+                <td>
+                  <strong><%= m.fullName %></strong>
+                  <% if (m.email) { %><br><small><%= m.email %></small><% } %>
+                </td>
+                <td><%= m.phone || '—' %></td>
+                <td><%= m.planName || '—' %></td>
+                <td>
+                  <% if (m.planEndDate) { %>
+                    <%= m.planEndDate %>
+                    <br>
+                    <span class="badge <%= badge %>">
+                      <% if (m.planStatus === 'expired')        { %>Expired
+                      <% } else if (m.planStatus === 'expires-today') { %>Ends today
+                      <% } else if (m.planStatus === 'expiring-soon') { %><%= m.daysLeft %> days left
+                      <% } else if (m.planStatus === 'active')  { %><%= m.daysLeft %> days left
+                      <% } else { %>No plan
+                      <% } %>
+                    </span>
+                  <% } else { %>
+                    <span class="badge">No plan</span>
+                  <% } %>
+                </td>
+                <td><%= m.assignedTrainerName || '—' %></td>
+                <td>
+                  <span class="badge <%= m.notificationEnabled ? 'success' : '' %>">
+                    <%= m.notificationEnabled ? 'On' : 'Off' %>
+                  </span>
+                </td>
+                <td>
+                  <span class="badge <%= m.isActive ? 'success' : 'danger' %>">
+                    <%= m.isActive ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <a href="/members/<%= m.id %>"      class="btn btn-sm">View</a>
+                    <% if (user && user.role === 'manager') { %>
+                      <a href="/members/<%= m.id %>/edit" class="btn btn-sm">Edit</a>
+                      <form method="POST" action="/members/<%= m.id %>/delete"
+                            onsubmit="return confirm('Deactivate this member?')" style="display:inline">
+                        <button type="submit" class="btn btn-sm danger">Deactivate</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-count"><%= members.length %> member<%= members.length === 1 ? '' : 's' %> shown</p>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/foot') %>

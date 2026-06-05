@@ -1,0 +1,604 @@
+<%- include('partials/sidebar', { title: title, user: user, activePage: activePage }) %>
+<div class="mgmt-container">
+
+    <div class="page-header">
+      <h1 class="page-title">Attendance</h1>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <!-- ============================================================
+         PUBLIC ATTENDANCE REPORT
+         ============================================================ -->
+    <section class="panel attendance-report-card">
+
+      <div class="panel-head">
+        <h2 class="report-section-title">Public Attendance Report</h2>
+      </div>
+
+      <!-- Filter Form -->
+      <form method="GET" action="/attendance" id="filterForm" class="attendance-filter-form">
+        <input type="hidden" id="quickHidden" name="quick" value="">
+
+        <div class="filter-grid">
+
+          <div class="filter-field">
+            <label for="rangeMode" class="filter-label">Range</label>
+            <select id="rangeMode" class="form-input">
+              <option value="today"    <%= rangeMode === 'today'    ? 'selected' : '' %>>Today</option>
+              <option value="week"     <%= rangeMode === 'week'     ? 'selected' : '' %>>This Week</option>
+              <option value="month"    <%= rangeMode === 'month'    ? 'selected' : '' %>>This Month</option>
+              <option value="range"    <%= rangeMode === 'range'    ? 'selected' : '' %>>Custom Range</option>
+              <option value="calendar" <%= rangeMode === 'calendar' ? 'selected' : '' %>>Specific Day</option>
+            </select>
+          </div>
+
+          <div class="filter-field" id="fromGroup" style="display:none;">
+            <label for="att_from" class="filter-label">From Date</label>
+            <input type="date" id="att_from" name="from" value="<%= filters.from %>" class="form-input">
+          </div>
+
+          <div class="filter-field" id="toGroup" style="display:none;">
+            <label for="att_to" class="filter-label">To Date</label>
+            <input type="date" id="att_to" name="to" value="<%= filters.to %>" class="form-input">
+          </div>
+
+          <div class="filter-field" id="calGroup" style="display:none;">
+            <label for="att_cal" class="filter-label">Select Day</label>
+            <input type="date" id="att_cal" name="calendar_date" value="<%= filters.calendar_date %>" class="form-input">
+          </div>
+
+          <%
+            var _personLabel = '';
+            if (filters.person_id) {
+              var _fm = members.find(function(m) { return m.id === filters.person_id; });
+              if (_fm) { _personLabel = _fm.fullName + ' (' + _fm.memberNo + ')'; }
+              else if (isManager) {
+                var _ft = trainers.find(function(t) { return t.id === filters.person_id; });
+                if (_ft) _personLabel = _ft.name + ' (Trainer)';
+              }
+            }
+          %>
+          <div class="filter-field filter-field-wide">
+            <label for="att_person_search" class="filter-label">Person</label>
+            <div class="person-search-wrap">
+              <input type="text" id="att_person_search" class="form-input person-search-input"
+                     placeholder="Search by name or member no…"
+                     autocomplete="off"
+                     value="<%= _personLabel %>">
+              <input type="hidden" name="person_id" id="att_person_id" value="<%= filters.person_id %>">
+              <button type="button" class="person-search-clear" id="personSearchClear"
+                      title="Clear" style="<%= filters.person_id ? '' : 'display:none;' %>">×</button>
+              <div class="person-search-dropdown" id="personDropdown"></div>
+            </div>
+          </div>
+
+          <div class="filter-field filter-actions">
+            <label class="filter-label">&nbsp;</label>
+            <div class="filter-btn-row">
+              <button type="submit" class="btn primary">Apply Filter</button>
+              <a href="/attendance" class="btn soft">Clear Filter</a>
+            </div>
+          </div>
+
+        </div>
+      </form>
+
+      <!-- Selected filter label -->
+      <p class="selected-filter-label"><%= selectedFilterLabel %></p>
+
+      <!-- Stats Cards — 7 cards -->
+      <div class="attendance-stats-grid">
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Total Check-ins</p>
+          <h3 class="att-stat-card-val"><%= pubStats.total %></h3>
+        </div>
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Unique Members</p>
+          <h3 class="att-stat-card-val"><%= pubStats.uniqueMembers %></h3>
+        </div>
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Currently Inside</p>
+          <h3 class="att-stat-card-val" style="color:var(--success)"><%= pubStats.insideNow %></h3>
+        </div>
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Checked Out</p>
+          <h3 class="att-stat-card-val"><%= pubStats.checkedOut %></h3>
+        </div>
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Missing OUT</p>
+          <h3 class="att-stat-card-val" style="color:var(--warning)"><%= pubStats.missingOut %></h3>
+        </div>
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Total Gym Time</p>
+          <h3 class="att-stat-card-val"><%= pubStats.totalGymTime %></h3>
+        </div>
+        <div class="panel att-stat-card">
+          <p class="att-stat-card-label">Avg Session</p>
+          <h3 class="att-stat-card-val"><%= pubStats.avgSession %></h3>
+        </div>
+      </div>
+
+      <!-- Week Summary Banner -->
+      <% if (weekSummary) { %>
+      <div class="att-banner att-banner-week">
+        <div class="att-banner-title">
+          <p class="att-banner-eyebrow">Week Summary</p>
+          <p class="att-banner-sub"><%= range.label %></p>
+        </div>
+        <div class="att-banner-stats">
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Check-ins</span>
+            <strong><%= weekSummary.totalCheckins %></strong>
+          </div>
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Unique Members</span>
+            <strong><%= weekSummary.uniqueMembers %></strong>
+          </div>
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Avg / Day</span>
+            <strong><%= weekSummary.avgDaily %></strong>
+          </div>
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Missing OUT</span>
+            <strong style="color:var(--warning)"><%= weekSummary.missingOut %></strong>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Person Summary Banner -->
+      <% if (personSummary) { %>
+      <div class="att-banner att-banner-person">
+        <div class="att-banner-title">
+          <p class="att-banner-eyebrow">Person Summary</p>
+          <p class="att-banner-sub"><%= personSummary.name %></p>
+          <p class="att-banner-range"><%= range.label %></p>
+        </div>
+        <div class="att-banner-stats">
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Total Visits</span>
+            <strong><%= personSummary.totalVisits %></strong>
+          </div>
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Total Time</span>
+            <strong><%= personSummary.totalDuration %></strong>
+          </div>
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Avg Session</span>
+            <strong><%= personSummary.avgDuration %></strong>
+          </div>
+          <div class="att-banner-stat">
+            <span class="att-banner-stat-label">Missing OUT</span>
+            <strong style="color:var(--warning)"><%= personSummary.missingOut %></strong>
+          </div>
+        </div>
+      </div>
+      <% } %>
+
+      <!-- Public Attendance Table -->
+      <% var srcLabels = { kiosk: 'Attendance Desk', manual: 'Manual', self: 'Self', manager: 'Manager' }; %>
+      <div class="report-table-wrap">
+        <table class="members-table att-table">
+          <thead>
+            <tr>
+              <th>Member Name</th>
+              <th>Member No</th>
+              <th>Phone</th>
+              <th>IN Time</th>
+              <th>OUT Time</th>
+              <th>Duration</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (publicRecords.length === 0) { %>
+              <tr>
+                <td colspan="9">
+                  <div class="empty">No public attendance records for this filter.</div>
+                </td>
+              </tr>
+            <% } else { %>
+              <% publicRecords.forEach(function(rec) { %>
+              <tr>
+                <td><strong><%= rec.personName %></strong></td>
+                <td>
+                  <% if (rec.memberNo) { %>
+                    <span class="member-no-badge"><%= rec.memberNo %></span>
+                  <% } else { %>
+                    <span class="muted">&mdash;</span>
+                  <% } %>
+                </td>
+                <td><%= rec.phone || '—' %></td>
+                <td class="att-time"><%= rec.inDisplay %></td>
+                <td class="att-time"><%= rec.outDisplay %></td>
+                <td>
+                  <% if (rec.duration && rec.duration !== '—') { %>
+                    <span class="att-duration"><%= rec.duration %></span>
+                  <% } else { %>
+                    <span class="muted">&mdash;</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="att-source att-source-<%= rec.source %>">
+                    <%= srcLabels[rec.source] || rec.source %>
+                  </span>
+                </td>
+                <td>
+                  <% if (rec.status === 'inside') { %>
+                    <span class="badge success">Inside</span>
+                  <% } else if (rec.status === 'checked-out') { %>
+                    <span class="badge">Checked Out</span>
+                  <% } else if (rec.status === 'missing-out') { %>
+                    <span class="badge warning">Missing OUT</span>
+                  <% } else { %>
+                    <span class="badge">Manual Entry</span>
+                  <% } %>
+                </td>
+                <td class="muted att-date"><%= rec.date %></td>
+              </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+        <p class="table-count">
+          <%= pubStats.total %> record<%= pubStats.total !== 1 ? 's' : '' %>
+          &mdash; Inside now: <%= pubStats.insideNow %>
+          &mdash; Checked out: <%= pubStats.checkedOut %>
+          &mdash; Unique members: <%= pubStats.uniqueMembers %>
+        </p>
+      </div>
+
+    </section>
+
+    <!-- ============================================================
+         MANUAL ATTENDANCE ENTRY (manager only)
+         ============================================================ -->
+    <% if (isManager) { %>
+    <section class="panel att-section" id="manualSection">
+      <div class="panel-head">
+        <h3>Manual Attendance Entry</h3>
+        <button type="button" class="btn soft btn-sm" id="manualToggleBtn">Add Entry</button>
+      </div>
+      <div id="manualFormWrap" style="display:none;">
+        <div id="manualMsg" class="att-manual-msg" style="display:none;"></div>
+        <form id="manualForm">
+          <div class="att-manual-row">
+            <div class="att-filter-group" style="flex:0 0 150px;">
+              <label class="att-filter-label">Person Type</label>
+              <select name="personType" id="manualPersonType" class="form-input">
+                <option value="member">Public Member</option>
+                <option value="trainer">Trainer</option>
+              </select>
+            </div>
+            <div class="att-filter-group" style="flex:1;min-width:220px;">
+              <label class="att-filter-label">Person</label>
+              <select name="personId" id="manualPersonId" class="form-input" required>
+                <option value="">Select person</option>
+                <optgroup label="Public Members" id="manualMemberGroup">
+                  <% members.forEach(function(m) { %>
+                  <option value="<%= m.id %>" data-ptype="member"><%= m.fullName %> (<%= m.memberNo %>)</option>
+                  <% }); %>
+                </optgroup>
+                <optgroup label="Trainers" id="manualTrainerGroup">
+                  <% trainers.forEach(function(t) { %>
+                  <option value="<%= t.id %>" data-ptype="trainer"><%= t.name %></option>
+                  <% }); %>
+                </optgroup>
+              </select>
+            </div>
+            <div class="att-filter-group" style="flex:1;min-width:190px;">
+              <label class="att-filter-label">IN Time</label>
+              <input type="datetime-local" name="inAt" id="manualInAt" class="form-input" required>
+            </div>
+            <div class="att-filter-group" style="flex:1;min-width:190px;">
+              <label class="att-filter-label">OUT Time (optional)</label>
+              <input type="datetime-local" name="outAt" id="manualOutAt" class="form-input">
+            </div>
+            <div class="att-filter-group" style="flex:0 0 auto;margin-top:auto;">
+              <button type="submit" class="btn primary btn-sm" id="manualSubmitBtn">Add Entry</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+    <% } %>
+
+    <!-- ============================================================
+         TRAINER ATTENDANCE (manager only)
+         ============================================================ -->
+    <% if (isManager) { %>
+    <section class="panel table-panel att-section">
+      <div class="panel-head">
+        <h3>Trainer Attendance</h3>
+        <span class="badge"><%= trainerStats.total %> record<%= trainerStats.total !== 1 ? 's' : '' %></span>
+      </div>
+      <div class="table-overflow">
+        <% var srcLabels2 = { kiosk: 'Attendance Desk', manual: 'Manual', self: 'Self', manager: 'Manager' }; %>
+        <table class="members-table att-table">
+          <thead>
+            <tr>
+              <th>Trainer Name</th>
+              <th>IN Time</th>
+              <th>OUT Time</th>
+              <th>Duration</th>
+              <th>Source</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (trainerRecords.length === 0) { %>
+              <tr>
+                <td colspan="7">
+                  <div class="empty">No trainer attendance for this filter.</div>
+                </td>
+              </tr>
+            <% } else { %>
+              <% trainerRecords.forEach(function(rec) { %>
+              <tr>
+                <td><strong><%= rec.personName %></strong></td>
+                <td class="att-time"><%= rec.inDisplay %></td>
+                <td class="att-time"><%= rec.outDisplay %></td>
+                <td>
+                  <% if (rec.duration && rec.duration !== '—') { %>
+                    <span class="att-duration"><%= rec.duration %></span>
+                  <% } else { %>
+                    <span class="muted">&mdash;</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="att-source att-source-<%= rec.source %>">
+                    <%= srcLabels2[rec.source] || rec.source %>
+                  </span>
+                </td>
+                <td>
+                  <% if (rec.status === 'inside') { %>
+                    <span class="badge success">Inside</span>
+                  <% } else if (rec.status === 'checked-out') { %>
+                    <span class="badge">Checked Out</span>
+                  <% } else { %>
+                    <span class="badge warning">Missing OUT</span>
+                  <% } %>
+                </td>
+                <td class="muted att-date"><%= rec.date %></td>
+              </tr>
+              <% }); %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+      <p class="table-count">
+        <%= trainerStats.total %> record<%= trainerStats.total !== 1 ? 's' : '' %>
+        &mdash; Inside now: <%= trainerStats.insideNow %>
+      </p>
+    </section>
+    <% } %>
+
+</div>
+
+<script>
+(function () {
+
+  // ── Filter form ─────────────────────────────────────────────────
+  var rangeMode   = document.getElementById('rangeMode');
+  var quickHidden = document.getElementById('quickHidden');
+  var fromInput   = document.getElementById('att_from');
+  var toInput     = document.getElementById('att_to');
+  var calInput    = document.getElementById('att_cal');
+  var fromGroup   = document.getElementById('fromGroup');
+  var toGroup     = document.getElementById('toGroup');
+  var calGroup    = document.getElementById('calGroup');
+  var filterForm  = document.getElementById('filterForm');
+
+  function updateVisibility() {
+    if (!rangeMode) return;
+    var v = rangeMode.value;
+    if (fromGroup) fromGroup.style.display = (v === 'range')    ? '' : 'none';
+    if (toGroup)   toGroup.style.display   = (v === 'range')    ? '' : 'none';
+    if (calGroup)  calGroup.style.display  = (v === 'calendar') ? '' : 'none';
+  }
+
+  if (rangeMode) {
+    rangeMode.addEventListener('change', updateVisibility);
+    updateVisibility();
+  }
+
+  if (filterForm) {
+    filterForm.addEventListener('submit', function () {
+      var v = rangeMode ? rangeMode.value : 'today';
+      if (v === 'range') {
+        if (quickHidden) quickHidden.value = '';
+        if (calInput)    calInput.value    = '';
+      } else if (v === 'calendar') {
+        if (quickHidden) quickHidden.value = '';
+        if (fromInput)   fromInput.value   = '';
+        if (toInput)     toInput.value     = '';
+      } else {
+        if (quickHidden) quickHidden.value = v;
+        if (fromInput)   fromInput.value   = '';
+        if (toInput)     toInput.value     = '';
+        if (calInput)    calInput.value    = '';
+      }
+    });
+  }
+
+  // ── Manual entry toggle ─────────────────────────────────────────
+  var manualToggleBtn = document.getElementById('manualToggleBtn');
+  var manualFormWrap  = document.getElementById('manualFormWrap');
+
+  if (manualToggleBtn && manualFormWrap) {
+    manualToggleBtn.addEventListener('click', function () {
+      var hidden = manualFormWrap.style.display === 'none' || manualFormWrap.style.display === '';
+      manualFormWrap.style.display  = hidden ? 'block' : 'none';
+      manualToggleBtn.textContent   = hidden ? 'Close' : 'Add Entry';
+    });
+  }
+
+  // ── Manual person type filter ───────────────────────────────────
+  var manualPersonType   = document.getElementById('manualPersonType');
+  var manualPersonId     = document.getElementById('manualPersonId');
+  var manualMemberGroup  = document.getElementById('manualMemberGroup');
+  var manualTrainerGroup = document.getElementById('manualTrainerGroup');
+
+  function updateManualOptions() {
+    if (!manualPersonType) return;
+    var t = manualPersonType.value;
+    if (manualMemberGroup)  manualMemberGroup.style.display  = (t === 'trainer') ? 'none' : '';
+    if (manualTrainerGroup) manualTrainerGroup.style.display = (t === 'member')  ? 'none' : '';
+    if (manualPersonId) manualPersonId.value = '';
+  }
+
+  if (manualPersonType) manualPersonType.addEventListener('change', updateManualOptions);
+
+  // ── Manual form AJAX submit ─────────────────────────────────────
+  var manualForm      = document.getElementById('manualForm');
+  var manualMsg       = document.getElementById('manualMsg');
+  var manualSubmitBtn = document.getElementById('manualSubmitBtn');
+
+  if (manualForm) {
+    manualForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fd   = new FormData(manualForm);
+      var body = {
+        personType: fd.get('personType'),
+        personId:   fd.get('personId'),
+        inAt:       fd.get('inAt'),
+        outAt:      fd.get('outAt') || null
+      };
+      if (!body.personId) {
+        showManualMsg('Please select a person.', false);
+        return;
+      }
+      manualSubmitBtn.disabled    = true;
+      manualSubmitBtn.textContent = 'Saving...';
+
+      fetch('/api/attendance/manual', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body)
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          showManualMsg('Attendance entry added.', true);
+          manualForm.reset();
+          setTimeout(function () { location.reload(); }, 900);
+        } else {
+          showManualMsg(data.message || 'Error saving entry.', false);
+        }
+      })
+      .catch(function () {
+        showManualMsg('Network error. Please try again.', false);
+      })
+      .finally(function () {
+        manualSubmitBtn.disabled    = false;
+        manualSubmitBtn.textContent = 'Add Entry';
+      });
+    });
+  }
+
+  function showManualMsg(text, ok) {
+    if (!manualMsg) return;
+    manualMsg.textContent      = text;
+    manualMsg.style.display    = 'block';
+    manualMsg.style.background = ok ? '#dcfce7' : '#fee2e2';
+    manualMsg.style.color      = ok ? '#166534' : '#991b1b';
+    manualMsg.style.border     = ok ? '1px solid #bbf7d0' : '1px solid #fecaca';
+  }
+
+  // ── Person search autocomplete ──────────────────────────────────
+  var personList = <%- JSON.stringify(
+    members.map(function(m) {
+      return { id: m.id, label: m.fullName + ' (' + m.memberNo + ')', sub: m.phone || '' };
+    }).concat(isManager ? trainers.map(function(t) {
+      return { id: t.id, label: t.name, sub: 'Trainer' };
+    }) : [])
+  ) %>;
+
+  var personSearch   = document.getElementById('att_person_search');
+  var personIdInput  = document.getElementById('att_person_id');
+  var personDropdown = document.getElementById('personDropdown');
+  var personClearBtn = document.getElementById('personSearchClear');
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderPersonDropdown(list) {
+    var slice = list.slice(0, 60);
+    if (!slice.length) {
+      personDropdown.innerHTML = '<div class="person-search-empty">No results found</div>';
+    } else {
+      personDropdown.innerHTML = slice.map(function(p) {
+        return '<div class="person-search-item" data-id="' + escHtml(p.id) +
+               '" data-label="' + escHtml(p.label) + '">' +
+               '<span class="person-search-name">' + escHtml(p.label) + '</span>' +
+               (p.sub ? '<span class="person-search-sub">' + escHtml(p.sub) + '</span>' : '') +
+               '</div>';
+      }).join('');
+    }
+    personDropdown.style.display = 'block';
+  }
+
+  function hidePersonDropdown() {
+    personDropdown.style.display = 'none';
+  }
+
+  function selectPerson(id, label) {
+    personIdInput.value  = id;
+    personSearch.value   = label;
+    if (personClearBtn) personClearBtn.style.display = '';
+    hidePersonDropdown();
+  }
+
+  function clearPerson() {
+    personIdInput.value  = '';
+    personSearch.value   = '';
+    if (personClearBtn) personClearBtn.style.display = 'none';
+    hidePersonDropdown();
+  }
+
+  if (personSearch) {
+    personSearch.addEventListener('input', function() {
+      var q = personSearch.value.trim().toLowerCase();
+      personIdInput.value = '';
+      if (personClearBtn) personClearBtn.style.display = q ? '' : 'none';
+      if (!q) { hidePersonDropdown(); return; }
+      var results = personList.filter(function(p) {
+        return p.label.toLowerCase().indexOf(q) !== -1 ||
+               (p.sub && p.sub.toLowerCase().indexOf(q) !== -1);
+      });
+      renderPersonDropdown(results);
+    });
+
+    personSearch.addEventListener('focus', function() {
+      if (!personSearch.value.trim()) renderPersonDropdown(personList);
+    });
+
+    personSearch.addEventListener('blur', function() {
+      setTimeout(hidePersonDropdown, 180);
+    });
+  }
+
+  if (personDropdown) {
+    personDropdown.addEventListener('mousedown', function(e) {
+      var item = e.target.closest('[data-id]');
+      if (!item) return;
+      e.preventDefault();
+      selectPerson(item.dataset.id, item.dataset.label);
+    });
+  }
+
+  if (personClearBtn) {
+    personClearBtn.addEventListener('click', clearPerson);
+  }
+
+})();
+</script>
+
+<%- include('partials/sidebar-foot') %>

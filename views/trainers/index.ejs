@@ -1,0 +1,82 @@
+<%- include('../partials/head') %>
+<%- include('../partials/nav') %>
+
+<div class="mgmt-body">
+  <div class="mgmt-container">
+
+    <div class="page-header">
+      <h1 class="page-title">Trainers</h1>
+      <div class="page-header-actions">
+        <a href="/trainers/new" class="btn primary">Add Trainer</a>
+      </div>
+    </div>
+
+    <div class="sub-nav">
+      <a href="/trainers"     class="sub-nav-link active">Trainers List</a>
+      <a href="/trainers/new" class="sub-nav-link">Add Trainer</a>
+    </div>
+
+    <% if (flash) { %>
+      <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <form class="search-bar" method="GET" action="/trainers">
+      <input type="text" name="q" value="<%= q %>"
+             placeholder="Search by name, email or phone..."
+             class="search-input">
+      <button type="submit" class="btn">Search</button>
+      <% if (q) { %><a href="/trainers" class="btn">Clear</a><% } %>
+    </form>
+
+    <div class="panel table-panel">
+      <% if (!trainers.length) { %>
+        <p class="empty">
+          <% if (q) { %>No trainers match your search.<% } else { %>No trainers found. <a href="/trainers/new">Add the first trainer.</a><% } %>
+        </p>
+      <% } else { %>
+        <div class="table-overflow">
+          <table class="members-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% trainers.forEach(function(t) { %>
+              <tr>
+                <td><strong><%= t.name %></strong></td>
+                <td><%= t.email %></td>
+                <td><%= t.phone || '—' %></td>
+                <td>
+                  <span class="badge <%= t.isActive ? 'success' : 'danger' %>">
+                    <%= t.isActive ? 'Active' : 'Inactive' %>
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <a href="/trainers/<%= t.id %>/edit" class="btn btn-sm">Edit</a>
+                    <% if (t.isActive) { %>
+                      <form method="POST" action="/trainers/<%= t.id %>/deactivate"
+                            onsubmit="return confirm('Deactivate this trainer?')" style="display:inline">
+                        <button type="submit" class="btn btn-sm danger">Deactivate</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </td>
+              </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+        <p class="table-count"><%= trainers.length %> trainer<%= trainers.length === 1 ? '' : 's' %></p>
+      <% } %>
+    </div>
+
+  </div>
+</div>
+
+<%- include('../partials/foot') %>
