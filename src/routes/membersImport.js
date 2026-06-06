@@ -182,7 +182,7 @@ function validateRow(row, existingNos) {
 router.get('/', (req, res) => {
   const flash = req.session.flash || null;
   delete req.session.flash;
-  res.render('members/import', { title: 'Import Members', flash, user: req.user });
+  res.render('members/import', { title: 'Import Members', flash, user: req.user, activePage: 'members' });
 });
 
 // ─── POST /members/import/preview ────────────────────────────
@@ -289,11 +289,12 @@ router.post('/preview', upload.single('file'), asyncRoute(async (req, res) => {
   req.session.importRowCount = rows.length;
 
   res.render('members/preview', {
-    title:   'Import Preview',
+    title:      'Import Preview',
     rows,
-    flash:   null,
-    user:    req.user,
-    trainers: trainees || []
+    flash:      null,
+    user:       req.user,
+    trainers:   trainees || [],
+    activePage: 'members'
   });
 }));
 
@@ -397,14 +398,15 @@ router.post('/confirm', asyncRoute(async (req, res) => {
   delete req.session.importRowCount;
 
   res.render('members/result', {
-    title:    'Import Complete',
+    title:      'Import Complete',
     inserted,
     updated,
     skipped,
-    errors:   importErrors,
-    total:    rows.length,
-    flash:    null,
-    user:     req.user
+    errors:     importErrors,
+    total:      rows.length,
+    flash:      null,
+    user:       req.user,
+    activePage: 'members'
   });
 }));
 

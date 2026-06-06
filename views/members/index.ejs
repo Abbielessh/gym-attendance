@@ -1,8 +1,5 @@
-<%- include('../partials/head') %>
-<%- include('../partials/nav') %>
-
-<div class="mgmt-body">
-  <div class="mgmt-container">
+<%- include('../partials/sidebar', { title: title, user: user, activePage: 'members' }) %>
+<div class="mgmt-container">
 
     <!-- Page header -->
     <div class="page-header">
@@ -135,6 +132,5 @@
     </div>
 
   </div>
-</div>
 
-<%- include('../partials/foot') %>
+<%- include('../partials/sidebar-foot') %>

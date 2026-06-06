@@ -1,12 +1,12 @@
 Save Kannai Fitness Studio Canva generated images in this folder.
 
 Required:
-logo-gym.png
+logo-gym.webp
 bg-gym.jpg
 
 Optional:
-icon-attendance.png
-icon-members.png
-icon-trainee.png
-icon-plan-expiry.png
-icon-pt-session.png
+icon-attendance.webp
+icon-members.webp
+icon-trainee.webp
+icon-plan-expiry.webp
+icon-pt-session.webp

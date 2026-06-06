@@ -18,10 +18,10 @@ const state = {
 
 const allTabs = [
   { id: 'overview',   label: 'Overview',    icon: 'OV', img: '' },
-  { id: 'members',    label: 'Members',     icon: 'MB', img: '/assets/img/icon-members.png' },
-  { id: 'attendance', label: 'Attendance',  icon: 'AT', img: '/assets/img/icon-attendance.png' },
-  { id: 'trainers',   label: 'Trainers',    icon: 'TR', img: '/assets/img/icon-trainee.png' },
-  { id: 'sessions',   label: 'PT Sessions', icon: 'PT', img: '/assets/img/icon-pt-session.png' }
+  { id: 'members',    label: 'Members',     icon: 'MB', img: '/assets/img/icon-members.webp' },
+  { id: 'attendance', label: 'Attendance',  icon: 'AT', img: '/assets/img/icon-attendance.webp' },
+  { id: 'trainers',   label: 'Trainers',    icon: 'TR', img: '/assets/img/icon-trainee.webp' },
+  { id: 'sessions',   label: 'PT Sessions', icon: 'PT', img: '/assets/img/icon-pt-session.webp' }
 ];
 
 function notify(message, type = 'success') {
@@ -89,12 +89,12 @@ function renderOverview() {
   const s = state.dashboard.stats;
   page.innerHTML = `
     <section class="stats-grid">
-      ${statCard('Active Members', s.activeMembers, 'Current public members', '/assets/img/icon-members.png', 'MB')}
-      ${statCard('Inside Now', s.insideNow, 'Members not checked out', '/assets/img/icon-attendance.png', 'IN')}
-      ${statCard('Public Check-ins Today', s.publicCheckinsToday, 'Attendance Desk and manual', '/assets/img/icon-attendance.png', 'AT')}
-      ${statCard('Plan Alerts', s.planAlerts, 'Expired or expiring soon', '/assets/img/icon-plan-expiry.png', 'PL')}
-      ${statCard('Trainer Attendance', s.trainerAttendanceToday, 'Today records', '/assets/img/icon-trainee.png', 'TR')}
-      ${statCard('PT Sessions Today', s.sessionsToday, 'Scheduled sessions', '/assets/img/icon-pt-session.png', 'PT')}
+      ${statCard('Active Members', s.activeMembers, 'Current public members', '/assets/img/icon-members.webp', 'MB')}
+      ${statCard('Inside Now', s.insideNow, 'Members not checked out', '/assets/img/icon-attendance.webp', 'IN')}
+      ${statCard('Public Check-ins Today', s.publicCheckinsToday, 'Attendance Desk and manual', '/assets/img/icon-attendance.webp', 'AT')}
+      ${statCard('Plan Alerts', s.planAlerts, 'Expired or expiring soon', '/assets/img/icon-plan-expiry.webp', 'PL')}
+      ${statCard('Trainer Attendance', s.trainerAttendanceToday, 'Today records', '/assets/img/icon-trainee.webp', 'TR')}
+      ${statCard('PT Sessions Today', s.sessionsToday, 'Scheduled sessions', '/assets/img/icon-pt-session.webp', 'PT')}
     </section>
     <section class="two-col">
       <div class="panel">
@@ -271,7 +271,7 @@ function renderTrainers() {
           <a href="/trainers" class="btn">Manage Trainers</a>
         </div>
       </div>
-      <div class="cards-grid">${state.trainers.map(t => `<article class="mini-card"><img src="/assets/img/icon-trainee.png" alt="TR" class="card-icon-img"><h3>${escapeHtml(t.name)}</h3><p>${escapeHtml(t.email)}</p><small>${escapeHtml(t.phone || 'No phone')}</small></article>`).join('')}</div>
+      <div class="cards-grid">${state.trainers.map(t => `<article class="mini-card"><img src="/assets/img/icon-trainee.webp" alt="TR" class="card-icon-img"><h3>${escapeHtml(t.name)}</h3><p>${escapeHtml(t.email)}</p><small>${escapeHtml(t.phone || 'No phone')}</small></article>`).join('')}</div>
     </section>`;
 }
 

@@ -6,7 +6,7 @@ Generate these assets in Canva and save them inside this folder:
 public/assets/img/
 ```
 
-Keep the exact file names below. The app already references `logo-gym.png` and `bg-gym.jpg`.
+Keep the exact file names below. The app already references `logo-gym.webp` and `bg-gym.jpg`.
 
 ## Required assets
 
@@ -15,7 +15,7 @@ Keep the exact file names below. The app already references `logo-gym.png` and `
 Save as:
 
 ```txt
-public/assets/img/logo-gym.png
+public/assets/img/logo-gym.webp
 ```
 
 Canva prompt:
@@ -27,7 +27,7 @@ Professional modern logo for Kannai Fitness Studio, bold letter K combined with 
 Export settings:
 
 ```txt
-PNG, transparent background, 1024 by 1024.
+webp, transparent background, 1024 by 1024.
 ```
 
 ### 2. Full website background image
@@ -59,7 +59,7 @@ The current app uses text badges instead of emoji icons. These optional icons ar
 Save as:
 
 ```txt
-public/assets/img/icon-attendance.png
+public/assets/img/icon-attendance.webp
 ```
 
 Canva prompt:
@@ -73,7 +73,7 @@ Minimal fitness attendance icon, keypad with check mark, modern vector style, bl
 Save as:
 
 ```txt
-public/assets/img/icon-members.png
+public/assets/img/icon-members.webp
 ```
 
 Canva prompt:
@@ -87,7 +87,7 @@ Minimal gym members icon, two abstract user silhouettes with membership card, mo
 Save as:
 
 ```txt
-public/assets/img/icon-trainee.png
+public/assets/img/icon-trainee.webp
 ```
 
 Canva prompt:
@@ -101,7 +101,7 @@ Minimal personal trainer icon, coach clipboard and dumbbell, modern vector style
 Save as:
 
 ```txt
-public/assets/img/icon-plan-expiry.png
+public/assets/img/icon-plan-expiry.webp
 ```
 
 Canva prompt:
@@ -115,7 +115,7 @@ Minimal gym plan expiry notification icon, calendar with alert badge and members
 Save as:
 
 ```txt
-public/assets/img/icon-pt-session.png
+public/assets/img/icon-pt-session.webp
 ```
 
 Canva prompt:

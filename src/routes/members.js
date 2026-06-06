@@ -88,12 +88,13 @@ router.get('/', asyncRoute(async (req, res) => {
   }
 
   res.render('members/index', {
-    title:   'Members',
+    title:      'Members',
     members,
-    q:       q || '',
-    filter:  showInactive ? 'inactive' : 'active',
-    flash:   popFlash(req),
-    user:    req.user
+    q:          q || '',
+    filter:     showInactive ? 'inactive' : 'active',
+    flash:      popFlash(req),
+    user:       req.user,
+    activePage: 'members'
   });
 }));
 
@@ -101,12 +102,13 @@ router.get('/', asyncRoute(async (req, res) => {
 router.get('/new', requireManagerOrTrainer, asyncRoute(async (req, res) => {
   const trainers = await getTrainers();
   res.render('members/new', {
-    title:    'Add Public Member',
+    title:      'Add Public Member',
     trainers,
-    flash:    popFlash(req),
-    errors:   [],
-    values:   {},
-    user:     req.user
+    flash:      popFlash(req),
+    errors:     [],
+    values:     {},
+    user:       req.user,
+    activePage: 'members'
   });
 }));
 
@@ -131,7 +133,7 @@ router.post('/', requireManagerOrTrainer, asyncRoute(async (req, res) => {
   if (errors.length) {
     const trainers = await getTrainers();
     return res.status(422).render('members/new', {
-      title: 'Add Public Member', trainers, flash: null, errors, values: body, user: req.user
+      title: 'Add Public Member', trainers, flash: null, errors, values: body, user: req.user, activePage: 'members'
     });
   }
 
@@ -173,10 +175,11 @@ router.get('/:id', asyncRoute(async (req, res) => {
   }
 
   res.render('members/show', {
-    title: member.fullName,
+    title:      member.fullName,
     member,
-    flash: popFlash(req),
-    user:  req.user
+    flash:      popFlash(req),
+    user:       req.user,
+    activePage: 'members'
   });
 }));
 
@@ -192,12 +195,13 @@ router.get('/:id/edit', requireManager, asyncRoute(async (req, res) => {
   }
   const trainers = await getTrainers();
   res.render('members/edit', {
-    title:    `Edit: ${data.full_name}`,
-    member:   memberFromRow(data),
+    title:      `Edit: ${data.full_name}`,
+    member:     memberFromRow(data),
     trainers,
-    flash:    popFlash(req),
-    errors:   [],
-    user:     req.user
+    flash:      popFlash(req),
+    errors:     [],
+    user:       req.user,
+    activePage: 'members'
   });
 }));
 
@@ -216,7 +220,7 @@ router.post('/:id', requireManager, asyncRoute(async (req, res) => {
     return res.status(422).render('members/edit', {
       title:  'Edit Member',
       member: data ? memberFromRow(data) : { id: req.params.id },
-      trainers, flash: null, errors, user: req.user
+      trainers, flash: null, errors, user: req.user, activePage: 'members'
     });
   }
 

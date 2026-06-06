@@ -1,0 +1,366 @@
+<%- include('../partials/sidebar', { title: title, user: user, activePage: activePage }) %>
+<div class="mgmt-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Attendance</h1>
+      <p class="muted" style="margin:4px 0 0;font-size:.9rem;"><%= todayLabel %></p>
+    </div>
+    <div class="page-header-actions">
+      <% if (isManager) { %>
+        <button type="button" class="btn soft" id="manualToggleBtn">Add Manual Entry</button>
+      <% } %>
+      <a href="/attendance/report" class="btn primary">Full Attendance Report</a>
+    </div>
+  </div>
+
+  <% if (flash) { %>
+    <div class="alert-msg alert-<%= flash.type %>"><%= flash.message %></div>
+  <% } %>
+
+  <!-- Summary cards -->
+  <div class="att-summary-row" style="margin-bottom:20px;">
+    <div class="panel att-stat" style="border-left:3px solid var(--success);">
+      <p class="att-stat-label">Inside Now</p>
+      <h3 class="att-stat-val" style="color:var(--success)"><%= pubStats.insideNow %></h3>
+    </div>
+    <div class="panel att-stat">
+      <p class="att-stat-label">Check-ins Today</p>
+      <h3 class="att-stat-val"><%= pubStats.checkinsToday %></h3>
+    </div>
+    <div class="panel att-stat">
+      <p class="att-stat-label">Checked Out Today</p>
+      <h3 class="att-stat-val"><%= pubStats.checkedOutToday %></h3>
+    </div>
+    <div class="panel att-stat" style="<%= pubStats.missingOut > 0 ? 'border-left:3px solid var(--warning);' : '' %>">
+      <p class="att-stat-label">Missing OUT</p>
+      <h3 class="att-stat-val" style="<%= pubStats.missingOut > 0 ? 'color:var(--warning)' : '' %>"><%= pubStats.missingOut %></h3>
+    </div>
+  </div>
+
+  <!-- Manual entry form (manager only, hidden by default) -->
+  <% if (isManager) { %>
+  <div id="manualEntryCard" class="panel att-section" style="display:none;margin-bottom:18px;">
+    <div class="panel-head">
+      <h3 style="margin:0;font-size:1rem;">Add Manual Entry</h3>
+    </div>
+    <div id="manualMsg" class="att-manual-msg" style="display:none;"></div>
+    <form id="manualForm">
+      <div class="att-manual-row">
+        <div class="att-filter-group" style="flex:1;min-width:220px;">
+          <label class="att-filter-label">Member</label>
+          <div class="person-search-wrap">
+            <input type="text" id="manualPersonSearch" class="form-input person-search-input"
+                   placeholder="Search member name or number..." autocomplete="off">
+            <input type="hidden" id="manualPersonId" name="personId">
+            <div class="person-search-dropdown" id="manualDropdown"></div>
+          </div>
+        </div>
+        <div class="att-filter-group" style="flex:1;min-width:190px;">
+          <label class="att-filter-label">IN Time</label>
+          <input type="datetime-local" name="inAt" id="manualInAt" class="form-input" required>
+        </div>
+        <div class="att-filter-group" style="flex:1;min-width:190px;">
+          <label class="att-filter-label">OUT Time (optional)</label>
+          <input type="datetime-local" name="outAt" id="manualOutAt" class="form-input">
+        </div>
+        <div class="att-filter-group" style="flex:0 0 auto;margin-top:auto;">
+          <button type="submit" class="btn primary btn-sm" id="manualSubmitBtn">Add Entry</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <% } %>
+
+  <!-- Currently Inside -->
+  <section class="panel att-section" style="margin-bottom:18px;">
+    <div class="panel-head">
+      <h3 style="margin:0;">Currently Inside</h3>
+      <span class="badge success"><%= currentlyInside.length %> member<%= currentlyInside.length !== 1 ? 's' : '' %></span>
+    </div>
+    <% if (currentlyInside.length === 0) { %>
+      <div class="empty">No members currently inside.</div>
+    <% } else { %>
+    <div class="table-overflow">
+      <table class="members-table att-table">
+        <thead>
+          <tr>
+            <th>Member Name</th>
+            <th>Member No</th>
+            <th>Phone</th>
+            <th>IN Time</th>
+            <th>Duration</th>
+            <th>Source</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% currentlyInside.forEach(function(rec) { %>
+          <tr>
+            <td><strong><%= rec.personName %></strong></td>
+            <td>
+              <% if (rec.memberNo) { %>
+                <span class="member-no-badge"><%= rec.memberNo %></span>
+              <% } else { %>
+                <span class="muted">&mdash;</span>
+              <% } %>
+            </td>
+            <td><%= rec.phone || '—' %></td>
+            <td class="att-time"><%= rec.inDisplay %></td>
+            <td><span class="att-duration"><%= rec.duration %></span></td>
+            <td><span class="att-source att-source-<%= rec.source %>"><%= rec.sourceLabel %></span></td>
+            <td>
+              <a href="/attendance/person/<%= rec.personId %>" class="btn btn-sm">View History</a>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <!-- Today's Attendance -->
+  <section class="panel att-section" style="margin-bottom:18px;">
+    <div class="panel-head">
+      <h3 style="margin:0;">Today's Attendance</h3>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="todaySearch" class="form-input"
+               style="width:230px;padding:8px 12px;font-size:.88rem;"
+               placeholder="Search name, number, phone...">
+        <span class="badge"><%= todayRecords.length %> record<%= todayRecords.length !== 1 ? 's' : '' %></span>
+      </div>
+    </div>
+    <% if (todayRecords.length === 0) { %>
+      <div class="empty">No attendance records for today yet.</div>
+    <% } else { %>
+    <div class="table-overflow">
+      <table class="members-table att-table" id="todayTable">
+        <thead>
+          <tr>
+            <th>Member Name</th>
+            <th>Member No</th>
+            <th>Phone</th>
+            <th>IN Time</th>
+            <th>OUT Time</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Source</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% todayRecords.forEach(function(rec) { %>
+          <tr data-search="<%= (rec.personName + ' ' + rec.memberNo + ' ' + rec.phone).toLowerCase() %>">
+            <td><strong><%= rec.personName %></strong></td>
+            <td>
+              <% if (rec.memberNo) { %>
+                <span class="member-no-badge"><%= rec.memberNo %></span>
+              <% } else { %>
+                <span class="muted">&mdash;</span>
+              <% } %>
+            </td>
+            <td><%= rec.phone || '—' %></td>
+            <td class="att-time"><%= rec.inDisplay || '—' %></td>
+            <td class="att-time"><%= rec.outDisplay || '—' %></td>
+            <td>
+              <% if (rec.duration && rec.duration !== '—') { %>
+                <span class="att-duration"><%= rec.duration %></span>
+              <% } else { %>
+                <span class="muted">&mdash;</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (rec.status === 'inside') { %>
+                <span class="badge success">Inside</span>
+              <% } else if (rec.status === 'checked-out') { %>
+                <span class="badge">Checked Out</span>
+              <% } else if (rec.status === 'missing-out') { %>
+                <span class="badge warning">Missing OUT</span>
+              <% } else { %>
+                <span class="badge">Manual Entry</span>
+              <% } %>
+            </td>
+            <td><span class="att-source att-source-<%= rec.source %>"><%= rec.sourceLabel %></span></td>
+            <td>
+              <a href="/attendance/person/<%= rec.personId %>" class="btn btn-sm">View History</a>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <% } %>
+  </section>
+
+  <!-- Link to full report -->
+  <div style="text-align:center;padding:8px 0 28px;">
+    <a href="/attendance/report" class="btn primary">Full Attendance Report</a>
+  </div>
+
+</div>
+
+<script>
+(function () {
+  // Search within today's table
+  var searchInput = document.getElementById('todaySearch');
+  var todayTable  = document.getElementById('todayTable');
+  if (searchInput && todayTable) {
+    searchInput.addEventListener('input', function () {
+      var q    = searchInput.value.trim().toLowerCase();
+      var rows = todayTable.querySelectorAll('tbody tr');
+      rows.forEach(function (row) {
+        var s = row.getAttribute('data-search') || '';
+        row.style.display = (!q || s.indexOf(q) !== -1) ? '' : 'none';
+      });
+    });
+  }
+
+  // Manual entry toggle
+  var manualBtn  = document.getElementById('manualToggleBtn');
+  var manualCard = document.getElementById('manualEntryCard');
+  if (manualBtn && manualCard) {
+    manualBtn.addEventListener('click', function () {
+      var hidden = manualCard.style.display === 'none';
+      manualCard.style.display = hidden ? 'block' : 'none';
+      manualBtn.textContent    = hidden ? 'Close' : 'Add Manual Entry';
+    });
+  }
+
+  // Member autocomplete for manual entry (lazy-loaded on first focus)
+  var manualSearch   = document.getElementById('manualPersonSearch');
+  var manualPersonId = document.getElementById('manualPersonId');
+  var manualDropdown = document.getElementById('manualDropdown');
+  var memberList     = null;
+
+  function escHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function renderDrop(list) {
+    var slice = list.slice(0, 60);
+    manualDropdown.innerHTML = slice.length === 0
+      ? '<div class="person-search-empty">No results found</div>'
+      : slice.map(function (p) {
+          return '<div class="person-search-item" data-id="' + escHtml(p.id) +
+                 '" data-label="' + escHtml(p.label) + '">' +
+                 '<span class="person-search-name">' + escHtml(p.label) + '</span>' +
+                 (p.sub ? '<span class="person-search-sub">' + escHtml(p.sub) + '</span>' : '') +
+                 '</div>';
+        }).join('');
+    manualDropdown.style.display = 'block';
+  }
+
+  function filterAndRender(q) {
+    var results = (memberList || []).filter(function (p) {
+      return p.label.toLowerCase().indexOf(q) !== -1 ||
+             (p.sub && p.sub.toLowerCase().indexOf(q) !== -1);
+    });
+    renderDrop(results);
+  }
+
+  function loadMembers(cb) {
+    if (memberList) { cb(); return; }
+    fetch('/api/members')
+      .then(function (r) { return r.json(); })
+      .catch(function () { return {}; })
+      .then(function (data) {
+        var list = data.members || data.data || [];
+        memberList = list.map(function (m) {
+          return {
+            id:    m.id,
+            label: (m.fullName || m.full_name || '') + ' (' + (m.memberNo || m.member_no || '') + ')',
+            sub:   m.phone || ''
+          };
+        });
+        cb();
+      });
+  }
+
+  if (manualSearch) {
+    manualSearch.addEventListener('focus', function () {
+      loadMembers(function () {
+        if (!manualSearch.value.trim()) renderDrop(memberList);
+        else filterAndRender(manualSearch.value.trim().toLowerCase());
+      });
+    });
+
+    manualSearch.addEventListener('input', function () {
+      manualPersonId.value = '';
+      var q = manualSearch.value.trim().toLowerCase();
+      if (!memberList || !q) { manualDropdown.style.display = 'none'; return; }
+      filterAndRender(q);
+    });
+
+    manualSearch.addEventListener('blur', function () {
+      setTimeout(function () { manualDropdown.style.display = 'none'; }, 180);
+    });
+  }
+
+  if (manualDropdown) {
+    manualDropdown.addEventListener('mousedown', function (e) {
+      var item = e.target.closest('[data-id]');
+      if (!item) return;
+      e.preventDefault();
+      manualPersonId.value         = item.dataset.id;
+      manualSearch.value           = item.dataset.label;
+      manualDropdown.style.display = 'none';
+    });
+  }
+
+  // Manual form submit
+  var manualForm      = document.getElementById('manualForm');
+  var manualMsg       = document.getElementById('manualMsg');
+  var manualSubmitBtn = document.getElementById('manualSubmitBtn');
+
+  if (manualForm) {
+    manualForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var fd   = new FormData(manualForm);
+      var body = {
+        personType: 'member',
+        personId:   fd.get('personId'),
+        inAt:       fd.get('inAt'),
+        outAt:      fd.get('outAt') || null
+      };
+      if (!body.personId) { showMsg('Please select a member.', false); return; }
+      manualSubmitBtn.disabled    = true;
+      manualSubmitBtn.textContent = 'Saving...';
+
+      fetch('/api/attendance/manual', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(body)
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.ok) {
+          showMsg('Attendance entry added.', true);
+          manualForm.reset();
+          manualPersonId.value = '';
+          manualSearch.value   = '';
+          setTimeout(function () { location.reload(); }, 900);
+        } else {
+          showMsg(data.message || 'Error saving entry.', false);
+        }
+      })
+      .catch(function () { showMsg('Network error. Please try again.', false); })
+      .finally(function () {
+        manualSubmitBtn.disabled    = false;
+        manualSubmitBtn.textContent = 'Add Entry';
+      });
+    });
+  }
+
+  function showMsg(text, ok) {
+    if (!manualMsg) return;
+    manualMsg.textContent      = text;
+    manualMsg.style.display    = 'block';
+    manualMsg.style.background = ok ? '#dcfce7' : '#fee2e2';
+    manualMsg.style.color      = ok ? '#166534' : '#991b1b';
+    manualMsg.style.border     = ok ? '1px solid #bbf7d0' : '1px solid #fecaca';
+  }
+})();
+</script>
+
+<%- include('../partials/sidebar-foot') %>

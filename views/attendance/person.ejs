@@ -1,0 +1,279 @@
+<%- include('../partials/sidebar', { title: title, user: user, activePage: activePage }) %>
+<div class="mgmt-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><%= member.fullName %></h1>
+      <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <code class="member-no-badge"><%= member.memberNo %></code>
+        <span class="badge <%= member.isActive ? 'success' : 'danger' %>">
+          <%= member.isActive ? 'Active' : 'Inactive' %>
+        </span>
+        <% if (stats.currentlyInside) { %>
+          <span class="badge success">Currently Inside</span>
+        <% } %>
+      </div>
+    </div>
+    <div class="page-header-actions">
+      <a href="/attendance" class="btn soft">Back to Attendance</a>
+      <% if (isManager) { %>
+        <a href="/members/<%= member.id %>" class="btn">Member Profile</a>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Member + Plan info -->
+  <div class="detail-grid" style="margin-bottom:18px;">
+    <div class="panel detail-panel">
+      <div class="detail-panel-title">Member Details</div>
+      <table class="detail-table">
+        <tr><th>Phone</th>  <td><%= member.phone || '—' %></td></tr>
+        <tr><th>Email</th>  <td><%= member.email || '—' %></td></tr>
+        <tr><th>Gender</th> <td><%= member.gender || '—' %></td></tr>
+      </table>
+    </div>
+    <div class="panel detail-panel">
+      <div class="detail-panel-title">Plan Details</div>
+      <%
+        var planBadge = '';
+        if (member.planStatus === 'expired')        planBadge = 'danger';
+        else if (member.planStatus === 'expires-today') planBadge = 'danger';
+        else if (member.planStatus === 'expiring-soon') planBadge = 'warning';
+        else if (member.planStatus === 'active')    planBadge = 'success';
+      %>
+      <table class="detail-table">
+        <tr><th>Plan</th>       <td><%= member.planName || '—' %></td></tr>
+        <tr><th>Start Date</th> <td><%= member.planStartDate || '—' %></td></tr>
+        <tr>
+          <th>End Date</th>
+          <td>
+            <%= member.planEndDate || '—' %>
+            <% if (member.planEndDate && planBadge) { %>
+              <br>
+              <span class="badge <%= planBadge %>">
+                <% if (member.planStatus === 'expired')        { %>Expired
+                <% } else if (member.planStatus === 'expires-today') { %>Ends today
+                <% } else if (member.planStatus === 'expiring-soon') { %><%= member.daysLeft %> days left
+                <% } else { %><%= member.daysLeft %> days left
+                <% } %>
+              </span>
+            <% } %>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="att-summary-row" style="margin-bottom:20px;">
+    <div class="panel att-stat">
+      <p class="att-stat-label">Total Visits</p>
+      <h3 class="att-stat-val"><%= stats.totalVisits %></h3>
+    </div>
+    <div class="panel att-stat">
+      <p class="att-stat-label">Total Gym Time</p>
+      <h3 class="att-stat-val"><%= stats.totalTime %></h3>
+    </div>
+    <div class="panel att-stat">
+      <p class="att-stat-label">Avg Session</p>
+      <h3 class="att-stat-val"><%= stats.avgSession %></h3>
+    </div>
+    <div class="panel att-stat" style="<%= stats.missingOut > 0 ? 'border-left:3px solid var(--warning);' : '' %>">
+      <p class="att-stat-label">Missing OUT</p>
+      <h3 class="att-stat-val" style="<%= stats.missingOut > 0 ? 'color:var(--warning)' : '' %>"><%= stats.missingOut %></h3>
+    </div>
+  </div>
+
+  <!-- Filter -->
+  <section class="panel" style="margin-bottom:18px;padding:18px 20px;">
+    <form method="GET" action="/attendance/person/<%= member.id %>" id="filterForm">
+      <input type="hidden" id="quickHidden" name="quick" value="">
+      <div class="filter-grid">
+        <div class="filter-field">
+          <label class="filter-label">Range</label>
+          <select id="rangeMode" class="form-input">
+            <option value="today"    <%= rangeMode === 'today'    ? 'selected' : '' %>>Today</option>
+            <option value="week"     <%= rangeMode === 'week'     ? 'selected' : '' %>>This Week</option>
+            <option value="month"    <%= rangeMode === 'month'    ? 'selected' : '' %>>This Month</option>
+            <option value="range"    <%= rangeMode === 'range'    ? 'selected' : '' %>>Custom Range</option>
+            <option value="calendar" <%= rangeMode === 'calendar' ? 'selected' : '' %>>Specific Day</option>
+          </select>
+        </div>
+        <div class="filter-field" id="fromGroup" style="display:none;">
+          <label class="filter-label">From Date</label>
+          <input type="date" id="att_from" name="from" value="<%= filters.from %>" class="form-input">
+        </div>
+        <div class="filter-field" id="toGroup" style="display:none;">
+          <label class="filter-label">To Date</label>
+          <input type="date" id="att_to" name="to" value="<%= filters.to %>" class="form-input">
+        </div>
+        <div class="filter-field" id="calGroup" style="display:none;">
+          <label class="filter-label">Select Day</label>
+          <input type="date" id="att_cal" name="calendar_date" value="<%= filters.calendar_date %>" class="form-input">
+        </div>
+        <div class="filter-field filter-actions">
+          <label class="filter-label">&nbsp;</label>
+          <div class="filter-btn-row">
+            <button type="submit" class="btn primary">Apply</button>
+            <a href="/attendance/person/<%= member.id %>" class="btn soft">Clear</a>
+          </div>
+        </div>
+      </div>
+    </form>
+    <p class="selected-filter-label" style="margin-top:14px;margin-bottom:0;">
+      Showing: <strong><%= range.label %></strong>
+      &mdash; <%= stats.totalVisits %> visit<%= stats.totalVisits !== 1 ? 's' : '' %>
+    </p>
+  </section>
+
+  <!-- Month-wise summary -->
+  <% if (monthSummary.length > 1) { %>
+  <section class="panel" style="margin-bottom:18px;">
+    <div class="panel-head">
+      <h3 style="margin:0;font-size:1rem;">Month-wise Summary</h3>
+    </div>
+    <div class="table-overflow">
+      <table class="members-table">
+        <thead>
+          <tr>
+            <th>Month</th>
+            <th>Total Visits</th>
+            <th>Checked Out</th>
+            <th>Total Time</th>
+            <th>Missing OUT</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% monthSummary.forEach(function(ms) { %>
+          <tr>
+            <td><strong><%= ms.month %></strong></td>
+            <td><%= ms.total %></td>
+            <td><%= ms.checkedOut %></td>
+            <td><%= ms.totalTimeStr %></td>
+            <td>
+              <% if (ms.missingOut > 0) { %>
+                <span class="badge warning"><%= ms.missingOut %></span>
+              <% } else { %>
+                <span class="muted">—</span>
+              <% } %>
+            </td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Full attendance history -->
+  <section class="panel table-panel" style="margin-bottom:24px;">
+    <div class="panel-head">
+      <h3 style="margin:0;">Attendance History</h3>
+      <span class="badge"><%= records.length %> record<%= records.length !== 1 ? 's' : '' %></span>
+    </div>
+    <% if (records.length === 0) { %>
+      <div class="empty">No attendance records for this filter.</div>
+    <% } else { %>
+    <div class="table-overflow">
+      <% var srcLabels = { kiosk: 'Attendance Desk', manual: 'Manual', self: 'Self', manager: 'Manager' }; %>
+      <table class="members-table att-table">
+        <thead>
+          <tr>
+            <th>IN Time</th>
+            <th>OUT Time</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Source</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% records.forEach(function(rec) { %>
+          <tr>
+            <td class="att-time"><%= rec.inDisplay %></td>
+            <td class="att-time">
+              <% if (rec.outDisplay) { %>
+                <%= rec.outDisplay %>
+              <% } else { %>
+                <span class="muted">&mdash;</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (rec.duration) { %>
+                <span class="att-duration"><%= rec.duration %></span>
+              <% } else { %>
+                <span class="muted">&mdash;</span>
+              <% } %>
+            </td>
+            <td>
+              <% if (rec.status === 'inside') { %>
+                <span class="badge success">Inside</span>
+              <% } else if (rec.status === 'checked-out') { %>
+                <span class="badge">Checked Out</span>
+              <% } else if (rec.status === 'missing-out') { %>
+                <span class="badge warning">Missing OUT</span>
+              <% } else { %>
+                <span class="badge">Manual Entry</span>
+              <% } %>
+            </td>
+            <td>
+              <span class="att-source att-source-<%= rec.source %>">
+                <%= srcLabels[rec.source] || rec.source %>
+              </span>
+            </td>
+            <td class="muted att-date"><%= rec.date %></td>
+          </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+    <p class="table-count"><%= records.length %> record<%= records.length !== 1 ? 's' : '' %></p>
+    <% } %>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  var rangeMode   = document.getElementById('rangeMode');
+  var quickHidden = document.getElementById('quickHidden');
+  var fromInput   = document.getElementById('att_from');
+  var toInput     = document.getElementById('att_to');
+  var calInput    = document.getElementById('att_cal');
+  var fromGroup   = document.getElementById('fromGroup');
+  var toGroup     = document.getElementById('toGroup');
+  var calGroup    = document.getElementById('calGroup');
+  var filterForm  = document.getElementById('filterForm');
+
+  function updateVisibility() {
+    if (!rangeMode) return;
+    var v = rangeMode.value;
+    if (fromGroup) fromGroup.style.display = (v === 'range')    ? '' : 'none';
+    if (toGroup)   toGroup.style.display   = (v === 'range')    ? '' : 'none';
+    if (calGroup)  calGroup.style.display  = (v === 'calendar') ? '' : 'none';
+  }
+
+  if (rangeMode) { rangeMode.addEventListener('change', updateVisibility); updateVisibility(); }
+
+  if (filterForm) {
+    filterForm.addEventListener('submit', function () {
+      var v = rangeMode ? rangeMode.value : 'month';
+      if (v === 'range') {
+        if (quickHidden) quickHidden.value = '';
+        if (calInput)    calInput.value    = '';
+      } else if (v === 'calendar') {
+        if (quickHidden) quickHidden.value = '';
+        if (fromInput)   fromInput.value   = '';
+        if (toInput)     toInput.value     = '';
+      } else {
+        if (quickHidden) quickHidden.value = v;
+        if (fromInput)   fromInput.value   = '';
+        if (toInput)     toInput.value     = '';
+        if (calInput)    calInput.value    = '';
+      }
+    });
+  }
+})();
+</script>
+
+<%- include('../partials/sidebar-foot') %>

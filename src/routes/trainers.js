@@ -44,22 +44,24 @@ router.get('/', asyncRoute(async (req, res) => {
   }
 
   res.render('trainers/index', {
-    title:    'Trainers',
+    title:      'Trainers',
     trainers,
-    q:        q || '',
-    flash:    popFlash(req),
-    user:     req.user
+    q:          q || '',
+    flash:      popFlash(req),
+    user:       req.user,
+    activePage: 'trainers'
   });
 }));
 
 // ─── GET /trainers/new ────────────────────────────────────────
 router.get('/new', asyncRoute(async (req, res) => {
   res.render('trainers/new', {
-    title:  'Add Trainer',
-    flash:  popFlash(req),
-    errors: [],
-    values: {},
-    user:   req.user
+    title:      'Add Trainer',
+    flash:      popFlash(req),
+    errors:     [],
+    values:     {},
+    user:       req.user,
+    activePage: 'trainers'
   });
 }));
 
@@ -85,7 +87,7 @@ router.post('/', asyncRoute(async (req, res) => {
 
   if (errors.length) {
     return res.status(422).render('trainers/new', {
-      title: 'Add Trainer', flash: null, errors, values: body, user: req.user
+      title: 'Add Trainer', flash: null, errors, values: body, user: req.user, activePage: 'trainers'
     });
   }
 
@@ -116,11 +118,12 @@ router.get('/:id/edit', asyncRoute(async (req, res) => {
     return res.redirect('/trainers');
   }
   res.render('trainers/edit', {
-    title:   `Edit: ${data.name}`,
-    trainer: sanitizeUser(userFromRow(data)),
-    flash:   popFlash(req),
-    errors:  [],
-    user:    req.user
+    title:      `Edit: ${data.name}`,
+    trainer:    sanitizeUser(userFromRow(data)),
+    flash:      popFlash(req),
+    errors:     [],
+    user:       req.user,
+    activePage: 'trainers'
   });
 }));
 
@@ -150,9 +153,12 @@ router.post('/:id', asyncRoute(async (req, res) => {
     const supabase = getSupabase();
     const { data } = await supabase.from('app_users').select('*').eq('id', req.params.id).maybeSingle();
     return res.status(422).render('trainers/edit', {
-      title:   'Edit Trainer',
-      trainer: data ? sanitizeUser(userFromRow(data)) : { id: req.params.id },
-      flash: null, errors, user: req.user
+      title:      'Edit Trainer',
+      trainer:    data ? sanitizeUser(userFromRow(data)) : { id: req.params.id },
+      flash:      null,
+      errors,
+      user:       req.user,
+      activePage: 'trainers'
     });
   }
 

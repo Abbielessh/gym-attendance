@@ -1,8 +1,5 @@
-<%- include('../partials/head') %>
-<%- include('../partials/nav') %>
-
-<div class="mgmt-body">
-  <div class="mgmt-container">
+<%- include('../partials/sidebar', { title: title, user: user, activePage: 'members' }) %>
+<div class="mgmt-container">
 
     <div class="page-header">
       <h1 class="page-title">Import Complete</h1>
@@ -63,6 +60,5 @@
     </div>
 
   </div>
-</div>
 
-<%- include('../partials/foot') %>
+<%- include('../partials/sidebar-foot') %>

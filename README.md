@@ -215,7 +215,7 @@ Your file can use any of these column headers (case and spacing are flexible):
 ## Where to Place Canva Images
 
 ```
-public/assets/img/logo-gym.png     gym logo
+public/assets/img/logo-gym.webp     gym logo
 public/assets/img/bg-gym.jpg       login page background
 ```
 

@@ -27,7 +27,7 @@ button, input, select { font: inherit; }
 .bg-page {
   background-image:
     linear-gradient(135deg, rgba(239, 246, 255, .92), rgba(255, 255, 255, .82) 44%, rgba(248, 250, 252, .9)),
-    url('/assets/img/bg-gym.png');
+    url('/assets/img/bg-gym.webp');
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

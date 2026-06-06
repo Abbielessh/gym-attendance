@@ -120,6 +120,7 @@ create trigger trg_attendance_updated_at
 create index if not exists idx_attendance_person on public.attendance(person_type, person_id);
 create index if not exists idx_attendance_person_open on public.attendance(person_type, person_id, out_at);
 create index if not exists idx_attendance_in_at on public.attendance(in_at desc);
+create index if not exists idx_attendance_out_at on public.attendance(out_at) where out_at is null;
 
 -- ─────────────────────────────────────────────
 -- TABLE: pt_sessions

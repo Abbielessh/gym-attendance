@@ -1,14 +1,12 @@
-<%- include('partials/head') %>
-<%- include('partials/nav') %>
-<div class="mgmt-body">
-  <div class="mgmt-container">
-    <div class="page-header">
-      <h1 class="page-title"><%= title %></h1>
-    </div>
-    <div class="panel error-panel">
-      <p><%= message %></p>
-      <a href="/members" class="btn">Back to Members</a>
-    </div>
+<%- include('partials/sidebar', { title: title, user: (typeof user !== 'undefined' ? user : null), activePage: '' }) %>
+<div class="mgmt-container">
+  <div class="page-header">
+    <h1 class="page-title"><%= title %></h1>
+  </div>
+  <div class="panel error-panel">
+    <p><%= message %></p>
+    <a href="/members" class="btn">Back to Members</a>
   </div>
 </div>
-<%- include('partials/foot') %>
+
+<%- include('partials/sidebar-foot') %>
